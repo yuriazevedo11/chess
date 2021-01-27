@@ -1,5 +1,6 @@
 import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
+import 'package:chess/models/ugly_move.dart';
 import 'package:chess/utils/algebraic.dart';
 import 'package:chess/utils/constants.dart';
 import 'package:chess/utils/validate_fen.dart';
@@ -118,14 +119,14 @@ class Chess {
     moveNumber = 1;
   }
 
-  Move _buildMove(
+  UglyMove _buildMove(
     List<Piece> board,
     int from,
     int to,
     int flags, [
     String promotion,
   ]) {
-    Move move = Move(
+    UglyMove move = UglyMove(
       color: _turn,
       from: from,
       to: to,
@@ -194,7 +195,7 @@ class Chess {
     return false;
   }
 
-  void _makeMove(Move move) {
+  void _makeMove(UglyMove move) {
     String us = _turn;
     String them = _swapColor(us);
 
@@ -285,25 +286,36 @@ class Chess {
     _turn = _swapColor(_turn);
   }
 
-  Move _makePretty(Move uglyMove) {
-    Move move = uglyMove;
-    move.to = algebraic(move.to);
-    move.from = algebraic(move.from);
-
+  Move _makePretty(UglyMove uglyMove) {
     var flags = '';
 
-    for (var flag in BITS.keys) {
-      if ((BITS[flag] & move.flags) != 0) {
+    for (String flag in BITS.keys) {
+      if ((BITS[flag] & uglyMove.flags) != 0) {
         flags += FLAGS[flag];
       }
     }
-    move.flags = flags;
+
+    Move move = Move(
+      captured: uglyMove.captured,
+      color: uglyMove.color,
+      piece: uglyMove.piece,
+      promotion: uglyMove.promotion,
+      to: algebraic(uglyMove.to),
+      from: algebraic(uglyMove.from),
+      flags: flags,
+    );
 
     return move;
   }
 
-  List<Move> _generateMoves([dynamic options]) {
-    _addMove(List<Piece> board, List<Move> moves, int from, int to, int flags) {
+  List<UglyMove> _generateMoves([dynamic options]) {
+    _addMove(
+      List<Piece> board,
+      List<UglyMove> moves,
+      int from,
+      int to,
+      int flags,
+    ) {
       /* If pawn promotion */
       if (board[from].type == PAWN &&
           (rank(to) == RANK_8 || rank(to) == RANK_1)) {
@@ -316,7 +328,7 @@ class Chess {
       }
     }
 
-    List<Move> moves = [];
+    List<UglyMove> moves = [];
     String us = _turn;
     String them = _swapColor(us);
     var secondRank = {'b': RANK_7, 'w': RANK_2};
@@ -441,7 +453,7 @@ class Chess {
     }
 
     /* Filter out illegal moves */
-    List<Move> legalMoves = [];
+    List<UglyMove> legalMoves = [];
     for (var i = 0, len = moves.length; i < len; i++) {
       _makeMove(moves[i]);
       if (!_kingAttacked(us)) {
@@ -459,7 +471,7 @@ class Chess {
       * unnecessary move keys.
     */
 
-    List<Move> uglyMoves = _generateMoves(options);
+    List<UglyMove> uglyMoves = _generateMoves(options);
     List<Move> moves = [];
 
     for (var i = 0, len = uglyMoves.length; i < len; i++) {
@@ -470,9 +482,9 @@ class Chess {
   }
 
   Move movePiece(Move move) {
-    Move moveObj;
+    UglyMove moveObj;
 
-    List<Move> moves = _generateMoves();
+    List<UglyMove> moves = _generateMoves();
 
     /* Convert the pretty move object to an ugly move object */
     for (int i = 0, len = moves.length; i < len; i++) {
@@ -539,6 +551,36 @@ class Chess {
     }
 
     return piece;
+  }
+
+  String ascii() {
+    String output = '   +------------------------+\n';
+
+    for (int i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
+      /* Display the rank */
+      if (file(i) == 0) {
+        output += ' ' + '87654321'[rank(i)] + ' |';
+      }
+
+      /* Empty piece */
+      if (_board[i] == null) {
+        output += ' . ';
+      } else {
+        var piece = _board[i].type;
+        var color = _board[i].color;
+        var symbol = color == WHITE ? piece.toUpperCase() : piece.toLowerCase();
+        output += ' ' + symbol + ' ';
+      }
+
+      if (((i + 1) & 0x88) != 0) {
+        output += '|\n';
+        i += 8;
+      }
+    }
+    output += '   +------------------------+\n';
+    output += '     a  b  c  d  e  f  g  h\n';
+
+    return output;
   }
 
   String _swapColor(String color) {
