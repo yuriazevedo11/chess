@@ -1,4 +1,5 @@
 import 'package:chess/utils/constants.dart';
+import 'package:chess/utils/validate_fen.dart';
 
 class Chess {
   final String fen;
@@ -33,6 +34,14 @@ class Chess {
   }
 
   bool _init(String fen, [bool keepHeader]) {
+    List<String> tokens = fen.split(RegExp(r'\s+'));
+    String position = tokens[0];
+    int square = 0;
+
+    if (!validateFen(fen)) {
+      return false;
+    }
+
     return true;
   }
 
