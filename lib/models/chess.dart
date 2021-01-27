@@ -1,3 +1,4 @@
+import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
 import 'package:chess/utils/algebraic.dart';
 import 'package:chess/utils/constants.dart';
@@ -5,7 +6,7 @@ import 'package:chess/utils/validate_fen.dart';
 
 class Chess {
   final String fen;
-  final rooks = {
+  final _rooks = {
     'w': [
       {'square': SQUARES["a1"], 'flag': BITS["QSIDE_CASTLE"]},
       {'square': SQUARES["h1"], 'flag': BITS["KSIDE_CASTLE"]}
@@ -16,13 +17,13 @@ class Chess {
     ]
   };
 
-  var board = List<Piece>.filled(128, Piece(type: '', color: ''));
-  var kings = {'w': EMPTY, 'b': EMPTY};
-  var turn = WHITE;
-  var castling = {'w': 0, 'b': 0};
-  var epSquare = EMPTY;
-  var halfMoves = 0;
-  var moveNumber = 1;
+  var _board = List<Piece>.filled(128, null);
+  var _kings = {'w': EMPTY, 'b': EMPTY};
+  String _turn = WHITE;
+  var _castling = {'w': 0, 'b': 0};
+  int _epSquare = EMPTY;
+  int halfMoves = 0;
+  int moveNumber = 1;
 
   Chess({this.fen}) {
     if (fen == null) {
@@ -30,6 +31,10 @@ class Chess {
     } else {
       _init(fen);
     }
+  }
+
+  void reset() {
+    _init(DEFAULT_POSITION);
   }
 
   bool _init(String fen) {
@@ -52,27 +57,30 @@ class Chess {
         square += int.parse(piece);
       } else {
         String color = piece.codeUnitAt(0) < 'a'.codeUnitAt(0) ? WHITE : BLACK;
-        _put(Piece(type: piece.toLowerCase(), color: color), algebraic(square));
+        putPiece(
+          Piece(type: piece.toLowerCase(), color: color),
+          algebraic(square),
+        );
         square++;
       }
     }
 
-    turn = tokens.elementAt(1);
+    _turn = tokens.elementAt(1);
 
     if (tokens.elementAt(2).indexOf('K') > -1) {
-      castling["w"] |= BITS["KSIDE_CASTLE"];
+      _castling["w"] |= BITS["KSIDE_CASTLE"];
     }
     if (tokens.elementAt(2).indexOf('Q') > -1) {
-      castling["w"] |= BITS["QSIDE_CASTLE"];
+      _castling["w"] |= BITS["QSIDE_CASTLE"];
     }
     if (tokens.elementAt(2).indexOf('k') > -1) {
-      castling["b"] |= BITS["KSIDE_CASTLE"];
+      _castling["b"] |= BITS["KSIDE_CASTLE"];
     }
     if (tokens.elementAt(2).indexOf('q') > -1) {
-      castling["b"] |= BITS["QSIDE_CASTLE"];
+      _castling["b"] |= BITS["QSIDE_CASTLE"];
     }
 
-    epSquare =
+    _epSquare =
         tokens.elementAt(3) == '-' ? EMPTY : SQUARES[tokens.elementAt(3)];
     halfMoves = int.parse(tokens.elementAt(4));
     moveNumber = int.parse(tokens.elementAt(5));
@@ -80,15 +88,421 @@ class Chess {
     return true;
   }
 
-  Piece _get(String square) {
-    return board[SQUARES[square]];
+  List<List<Piece>> board() {
+    List<List<Piece>> output = [];
+    List<Piece> row = [];
+
+    for (int i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
+      if (_board[i] == null) {
+        row.add(null);
+      } else {
+        row.add(Piece(type: _board[i].type, color: _board[i].color));
+      }
+      if (((i + 1) & 0x88) != 0) {
+        output.add(row);
+        row = [];
+        i += 8;
+      }
+    }
+
+    return output;
   }
 
-  bool _put(Piece piece, String square) {
-    /* Check for valid piece object */
-    if (piece.type == '' && piece.color == '') {
-      return false;
+  void _clear() {
+    _board = List.filled(128, null);
+    _kings = {'w': EMPTY, 'b': EMPTY};
+    _turn = WHITE;
+    _castling = {'w': 0, 'b': 0};
+    _epSquare = EMPTY;
+    halfMoves = 0;
+    moveNumber = 1;
+  }
+
+  Move _buildMove(
+    List<Piece> board,
+    int from,
+    int to,
+    int flags, [
+    String promotion,
+  ]) {
+    Move move = Move(
+      color: _turn,
+      from: from,
+      to: to,
+      flags: flags,
+      piece: board[from].type,
+    );
+
+    if (promotion != null && promotion != '') {
+      move.flags |= BITS["PROMOTION"];
+      move.promotion = promotion;
     }
+
+    if (board[to] != null) {
+      move.captured = board[to].type;
+    } else if ((flags & BITS["EP_CAPTURE"]) != 0) {
+      move.captured = PAWN;
+    }
+
+    return move;
+  }
+
+  bool _attacked(String color, int square) {
+    for (var i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
+      /* Did we run off the end of the board? */
+      if ((i & 0x88) != 0) {
+        i += 7;
+        continue;
+      }
+
+      /* If empty square or wrong color */
+      if (_board[i] == null || _board[i].color != color) continue;
+
+      var piece = _board[i];
+      var difference = i - square;
+      var index = difference + 119;
+
+      if ((ATTACKS[index] & (1 << SHIFTS[piece.type])) != 0) {
+        if (piece.type == PAWN) {
+          if (difference > 0) {
+            if (piece.color == WHITE) return true;
+          } else {
+            if (piece.color == BLACK) return true;
+          }
+          continue;
+        }
+
+        /* If the piece is a knight or a king */
+        if (piece.type == 'n' || piece.type == 'k') return true;
+
+        var offset = RAYS[index];
+        var j = i + offset;
+
+        var blocked = false;
+        while (j != square) {
+          if (_board[j] != null) {
+            blocked = true;
+            break;
+          }
+          j += offset;
+        }
+
+        if (!blocked) return true;
+      }
+    }
+
+    return false;
+  }
+
+  void _makeMove(Move move) {
+    String us = _turn;
+    String them = _swapColor(us);
+
+    _board[move.to] = _board[move.from];
+    _board[move.from] = null;
+
+    /* If ep capture, remove the captured pawn */
+    if ((move.flags & BITS["EP_CAPTURE"]) != 0) {
+      if (_turn == BLACK) {
+        _board[move.to - 16] = null;
+      } else {
+        _board[move.to + 16] = null;
+      }
+    }
+
+    /* If pawn promotion, replace with new piece */
+    if ((move.flags & BITS["PROMOTION"]) != 0) {
+      _board[move.to] = Piece(type: move.promotion, color: us);
+    }
+
+    /* If we moved the king */
+    if (_board[move.to] != null && _board[move.to].type == KING) {
+      _kings[_board[move.to].color] = move.to;
+
+      /* If we castled, move the rook next to the king */
+      if ((move.flags & BITS["KSIDE_CASTLE"]) != 0) {
+        var castlingTo = move.to - 1;
+        var castlingFrom = move.to + 1;
+        _board[castlingTo] = _board[castlingFrom];
+        _board[castlingFrom] = null;
+      } else if ((move.flags & BITS["QSIDE_CASTLE"]) != 0) {
+        var castlingTo = move.to + 1;
+        var castlingFrom = move.to - 2;
+        _board[castlingTo] = _board[castlingFrom];
+        _board[castlingFrom] = null;
+      }
+
+      /* Turn off castling */
+      _castling[us] = -1;
+    }
+
+    /* Turn off castling if we move a rook */
+    if (_castling[us] > 0) {
+      for (int i = 0, len = _rooks[us].length; i < len; i++) {
+        if (move.from == _rooks[us][i]["square"] &&
+            ((_castling[us] & _rooks[us][i]["flag"]) != 0)) {
+          _castling[us] ^= _rooks[us][i]["flag"];
+          break;
+        }
+      }
+    }
+
+    /* Turn off castling if we capture a rook */
+    if (_castling[them] > 0) {
+      for (int i = 0, len = _rooks[them].length; i < len; i++) {
+        if (move.to == _rooks[them][i]["square"] &&
+            ((_castling[them] & _rooks[them][i]["flag"]) != 0)) {
+          _castling[them] ^= _rooks[them][i]["flag"];
+          break;
+        }
+      }
+    }
+
+    /* If big pawn move, update the en passant square */
+    if ((move.flags & BITS["BIG_PAWN"]) != 0) {
+      if (_turn == 'b') {
+        _epSquare = move.to - 16;
+      } else {
+        _epSquare = move.to + 16;
+      }
+    } else {
+      _epSquare = EMPTY;
+    }
+
+    /* Reset the 50 move counter if a pawn is moved or a piece is captured */
+    if (move.piece == PAWN) {
+      halfMoves = 0;
+    } else if ((move.flags & (BITS["CAPTURE"] | BITS["EP_CAPTURE"])) != 0) {
+      halfMoves = 0;
+    } else {
+      halfMoves++;
+    }
+
+    if (_turn == BLACK) {
+      moveNumber++;
+    }
+
+    _turn = _swapColor(_turn);
+  }
+
+  Move _makePretty(Move uglyMove) {
+    Move move = uglyMove;
+    move.to = algebraic(move.to);
+    move.from = algebraic(move.from);
+
+    var flags = '';
+
+    for (var flag in BITS.keys) {
+      if ((BITS[flag] & move.flags) != 0) {
+        flags += FLAGS[flag];
+      }
+    }
+    move.flags = flags;
+
+    return move;
+  }
+
+  List<Move> _generateMoves([dynamic options]) {
+    _addMove(List<Piece> board, List<Move> moves, int from, int to, int flags) {
+      /* If pawn promotion */
+      if (board[from].type == PAWN &&
+          (rank(to) == RANK_8 || rank(to) == RANK_1)) {
+        List<String> pieces = [QUEEN, ROOK, BISHOP, KNIGHT];
+        for (int i = 0, len = pieces.length; i < len; i++) {
+          moves.add(_buildMove(board, from, to, flags, pieces[i]));
+        }
+      } else {
+        moves.add(_buildMove(board, from, to, flags));
+      }
+    }
+
+    List<Move> moves = [];
+    String us = _turn;
+    String them = _swapColor(us);
+    var secondRank = {'b': RANK_7, 'w': RANK_2};
+
+    int firstSq = SQUARES["a8"];
+    int lastSq = SQUARES["h1"];
+    bool singleSquare = false;
+
+    /* Do we want legal moves? */
+    bool legal =
+        options == null || options["legal"] == null ? true : options["legal"];
+
+    /* Are we generating moves for a single square? */
+    if (options != null && options["square"] != null) {
+      if (SQUARES.containsKey(options["square"])) {
+        firstSq = lastSq = SQUARES[options.square];
+        singleSquare = true;
+      } else {
+        /* Invalid square */
+        return [];
+      }
+    }
+
+    for (var i = firstSq; i <= lastSq; i++) {
+      /* Did we run off the end of the board? */
+      if ((i & 0x88) != 0) {
+        i += 7;
+        continue;
+      }
+
+      Piece piece = _board[i];
+      if (piece == null || piece.color != us) {
+        continue;
+      }
+
+      if (piece.type == PAWN) {
+        /* Single square, non-capturing */
+        int square = i + PAWN_OFFSETS[us][0];
+        if (_board[square] == null) {
+          _addMove(_board, moves, i, square, BITS["NORMAL"]);
+
+          /* Double square */
+          int doubleSquare = i + PAWN_OFFSETS[us][1];
+          if (secondRank[us] == rank(i) && _board[doubleSquare] == null) {
+            _addMove(_board, moves, i, doubleSquare, BITS["BIG_PAWN"]);
+          }
+        }
+
+        /* Pawn captures */
+        for (int j = 2; j < 4; j++) {
+          int square = i + PAWN_OFFSETS[us][j];
+          if ((square & 0x88) != 0) continue;
+
+          if (_board[square] != null && _board[square].color == them) {
+            _addMove(_board, moves, i, square, BITS["CAPTURE"]);
+          } else if (square == _epSquare) {
+            _addMove(_board, moves, i, _epSquare, BITS["EP_CAPTURE"]);
+          }
+        }
+      } else {
+        for (int j = 0, len = PIECE_OFFSETS[piece.type].length; j < len; j++) {
+          int offset = PIECE_OFFSETS[piece.type][j];
+          int square = i;
+
+          while (true) {
+            square += offset;
+            if ((square & 0x88) != 0) break;
+
+            if (_board[square] == null) {
+              _addMove(_board, moves, i, square, BITS["NORMAL"]);
+            } else {
+              if (_board[square].color == us) break;
+              _addMove(_board, moves, i, square, BITS["CAPTURE"]);
+              break;
+            }
+
+            /* Break, if knight or king */
+            if (piece.type == 'n' || piece.type == 'k') break;
+          }
+        }
+      }
+    }
+
+    /* Check for castling if:
+     * a) we're generating all moves, or
+     * b) we're doing single square move generation on the king's square
+     */
+    if (!singleSquare || lastSq == _kings[us]) {
+      /* King-side castling */
+      if ((_castling[us] & BITS["KSIDE_CASTLE"]) != 0) {
+        int castlingFrom = _kings[us];
+        int castlingTo = castlingFrom + 2;
+
+        if (_board[castlingFrom + 1] == null &&
+            _board[castlingTo] == null &&
+            !_attacked(them, _kings[us]) &&
+            !_attacked(them, castlingFrom + 1) &&
+            !_attacked(them, castlingTo)) {
+          _addMove(_board, moves, _kings[us], castlingTo, BITS["KSIDE_CASTLE"]);
+        }
+      }
+
+      /* Queen-side castling */
+      if ((_castling[us] & BITS["QSIDE_CASTLE"]) != 0) {
+        int castlingFrom = _kings[us];
+        int castlingTo = castlingFrom - 2;
+
+        if (_board[castlingFrom - 1] == null &&
+            _board[castlingFrom - 2] == null &&
+            _board[castlingFrom - 3] == null &&
+            !_attacked(them, _kings[us]) &&
+            !_attacked(them, castlingFrom - 1) &&
+            !_attacked(them, castlingTo)) {
+          _addMove(_board, moves, _kings[us], castlingTo, BITS["QSIDE_CASTLE"]);
+        }
+      }
+    }
+
+    /* Return all pseudo-legal moves (this includes moves that allow the king to be captured) */
+    if (!legal) {
+      return moves;
+    }
+
+    /* Filter out illegal moves */
+    List<Move> legalMoves = [];
+    for (var i = 0, len = moves.length; i < len; i++) {
+      _makeMove(moves[i]);
+      if (!_kingAttacked(us)) {
+        legalMoves.add(moves[i]);
+      }
+    }
+
+    return legalMoves;
+  }
+
+  List<Move> moves([dynamic options]) {
+    /* The internal representation of a chess move is in 0x88 format, and
+      * not meant to be human-readable. The code below converts the 0x88
+      * square coordinates to algebraic coordinates. It also prunes an
+      * unnecessary move keys.
+    */
+
+    List<Move> uglyMoves = _generateMoves(options);
+    List<Move> moves = [];
+
+    for (var i = 0, len = uglyMoves.length; i < len; i++) {
+      moves.add(_makePretty(uglyMoves[i]));
+    }
+
+    return moves;
+  }
+
+  Move movePiece(Move move) {
+    Move moveObj;
+
+    List<Move> moves = _generateMoves();
+
+    /* Convert the pretty move object to an ugly move object */
+    for (int i = 0, len = moves.length; i < len; i++) {
+      if (move.from.toString() == algebraic(moves[i].from) &&
+          move.to.toString() == algebraic(moves[i].to) &&
+          (moves[i].promotion == null ||
+              move.promotion == moves[i].promotion)) {
+        moveObj = moves[i];
+        break;
+      }
+    }
+
+    /* Failed to find move */
+    if (moveObj == null) {
+      return null;
+    }
+
+    Move prettyMove = _makePretty(moveObj);
+
+    _makeMove(moveObj);
+
+    return prettyMove;
+  }
+
+  Piece getPiece(String square) {
+    return _board[SQUARES[square]];
+  }
+
+  bool putPiece(Piece piece, String square) {
+    if (piece == null) return false;
 
     /* Check for piece */
     if (SYMBOLS.indexOf(piece.type.toLowerCase()) == -1) {
@@ -104,92 +518,34 @@ class Chess {
 
     /* Don't let the user place more than one king */
     if (piece.type == KING &&
-        !(kings[piece.color] == EMPTY || kings[piece.color] == sq)) {
+        !(_kings[piece.color] == EMPTY || _kings[piece.color] == sq)) {
       return false;
     }
 
-    board[sq] = Piece(type: piece.type, color: piece.color);
+    _board[sq] = Piece(type: piece.type, color: piece.color);
     if (piece.type == KING) {
-      kings[piece.color] = sq;
+      _kings[piece.color] = sq;
     }
 
     return true;
   }
 
-  Piece _remove(String square) {
-    Piece piece = _get(square);
-    board[SQUARES[square]] = null;
+  Piece removePiece(String square) {
+    Piece piece = getPiece(square);
+    _board[SQUARES[square]] = null;
 
     if (piece.type == KING) {
-      kings[piece.color] = EMPTY;
+      _kings[piece.color] = EMPTY;
     }
 
     return piece;
   }
 
-  String _generateFen() {
-    int empty = 0;
-    String fen = '';
-
-    for (var i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
-      if (board[i] == null) {
-        empty++;
-      } else {
-        if (empty > 0) {
-          fen += empty.toString();
-          empty = 0;
-        }
-        String color = board[i].color;
-        String piece = board[i].type;
-        fen += color == WHITE ? piece.toUpperCase() : piece.toLowerCase();
-      }
-
-      if (((i + 1) & 0x88) != 0) {
-        if (empty > 0) {
-          fen += empty.toString();
-        }
-
-        if (i != SQUARES["h1"]) {
-          fen += '/';
-        }
-
-        empty = 0;
-        i += 8;
-      }
-    }
-
-    String cflags = '';
-    if ((castling[WHITE] & BITS["KSIDE_CASTLE"]) != 0) {
-      cflags += 'K';
-    }
-    if ((castling[WHITE] & BITS["QSIDE_CASTLE"]) != 0) {
-      cflags += 'Q';
-    }
-    if ((castling[BLACK] & BITS["KSIDE_CASTLE"]) != 0) {
-      cflags += 'k';
-    }
-    if ((castling[BLACK] & BITS["QSIDE_CASTLE"]) != 0) {
-      cflags += 'q';
-    }
-
-    /* Do we have an empty castling flag? */
-    if (cflags == '') cflags = '-';
-    var epflags = epSquare == EMPTY ? '-' : algebraic(epSquare);
-
-    return [fen, turn, cflags, epflags, halfMoves, moveNumber].join(' ');
+  String _swapColor(String color) {
+    return color == WHITE ? BLACK : WHITE;
   }
 
-  void _clear() {
-    board = List.filled(128, null);
-    kings = {'w': EMPTY, 'b': EMPTY};
-    turn = WHITE;
-    castling = {'w': 0, 'b': 0};
-    epSquare = EMPTY;
-    halfMoves = 0;
-    moveNumber = 1;
-  }
-
-  void _reset() {
-    _init(DEFAULT_POSITION);
+  _kingAttacked(String color) {
+    return _attacked(_swapColor(color), _kings[color]);
   }
 }

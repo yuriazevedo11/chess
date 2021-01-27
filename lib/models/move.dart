@@ -17,15 +17,15 @@ class Move {
     this.captured,
   });
 
-  set to(to) {
+  set to(int to) {
     this.to = to;
   }
 
-  set from(from) {
+  set from(int from) {
     this.from = from;
   }
 
-  set flags(flags) {
+  set flags(int flags) {
     this.flags = flags;
   }
 
