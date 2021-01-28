@@ -1,12 +1,4 @@
-import 'package:chess/models/chess.dart';
-import 'package:chess/models/fen_exception.dart';
+import 'package:chess/screens/chess_app.dart';
+import 'package:flutter/material.dart';
 
-void main() {
-  try {
-    Chess chess = Chess();
-    var ascii = chess.ascii();
-    print(ascii);
-  } on FenException catch (err) {
-    print(err.message);
-  }
-}
+void main() => runApp(ChessApp());
