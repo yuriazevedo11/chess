@@ -6,7 +6,7 @@ import 'package:chess/utils/constants.dart';
 import 'package:chess/utils/validate_fen.dart';
 
 class Chess {
-  final String fen;
+  final String _fen;
   final _rooks = {
     'w': [
       {'square': SQUARES["a1"], 'flag': BITS["QSIDE_CASTLE"]},
@@ -23,15 +23,19 @@ class Chess {
   String _turn = WHITE;
   var _castling = {'w': 0, 'b': 0};
   int _epSquare = EMPTY;
-  int halfMoves = 0;
-  int moveNumber = 1;
+  int _halfMoves = 0;
+  int _moveNumber = 1;
 
-  Chess({this.fen}) {
-    if (fen == null) {
+  Chess([this._fen]) {
+    if (_fen == null) {
       _init(DEFAULT_POSITION);
     } else {
-      _init(fen);
+      _init(_fen);
     }
+  }
+
+  String get fen {
+    return _generateFen();
   }
 
   void reset() {
@@ -83,8 +87,8 @@ class Chess {
 
     _epSquare =
         tokens.elementAt(3) == '-' ? EMPTY : SQUARES[tokens.elementAt(3)];
-    halfMoves = int.parse(tokens.elementAt(4));
-    moveNumber = int.parse(tokens.elementAt(5));
+    _halfMoves = int.parse(tokens.elementAt(4));
+    _moveNumber = int.parse(tokens.elementAt(5));
 
     return true;
   }
@@ -115,8 +119,8 @@ class Chess {
     _turn = WHITE;
     _castling = {'w': 0, 'b': 0};
     _epSquare = EMPTY;
-    halfMoves = 0;
-    moveNumber = 1;
+    _halfMoves = 0;
+    _moveNumber = 1;
   }
 
   UglyMove _buildMove(
@@ -272,15 +276,15 @@ class Chess {
 
     /* Reset the 50 move counter if a pawn is moved or a piece is captured */
     if (move.piece == PAWN) {
-      halfMoves = 0;
+      _halfMoves = 0;
     } else if ((move.flags & (BITS["CAPTURE"] | BITS["EP_CAPTURE"])) != 0) {
-      halfMoves = 0;
+      _halfMoves = 0;
     } else {
-      halfMoves++;
+      _halfMoves++;
     }
 
     if (_turn == BLACK) {
-      moveNumber++;
+      _moveNumber++;
     }
 
     _turn = _swapColor(_turn);
@@ -464,7 +468,7 @@ class Chess {
     return legalMoves;
   }
 
-  List<Move> moves([dynamic options]) {
+  List<Move> possibleMoves([dynamic options]) {
     /* The internal representation of a chess move is in 0x88 format, and
       * not meant to be human-readable. The code below converts the 0x88
       * square coordinates to algebraic coordinates. It also prunes an
@@ -566,9 +570,10 @@ class Chess {
       if (_board[i] == null) {
         output += ' . ';
       } else {
-        var piece = _board[i].type;
-        var color = _board[i].color;
-        var symbol = color == WHITE ? piece.toUpperCase() : piece.toLowerCase();
+        String piece = _board[i].type;
+        String color = _board[i].color;
+        String symbol =
+            color == WHITE ? piece.toUpperCase() : piece.toLowerCase();
         output += ' ' + symbol + ' ';
       }
 
@@ -581,6 +586,59 @@ class Chess {
     output += '     a  b  c  d  e  f  g  h\n';
 
     return output;
+  }
+
+  String _generateFen() {
+    int empty = 0;
+    String fen = '';
+
+    for (int i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
+      if (_board[i] == null) {
+        empty++;
+      } else {
+        if (empty > 0) {
+          fen += empty.toString();
+          empty = 0;
+        }
+        String color = _board[i].color;
+        String piece = _board[i].type;
+
+        fen += color == WHITE ? piece.toUpperCase() : piece.toLowerCase();
+      }
+
+      if (((i + 1) & 0x88) != 0) {
+        if (empty > 0) {
+          fen += empty.toString();
+        }
+
+        if (i != SQUARES["h1"]) {
+          fen += '/';
+        }
+
+        empty = 0;
+        i += 8;
+      }
+    }
+
+    String cflags = '';
+    if ((_castling[WHITE] & BITS["KSIDE_CASTLE"]) != 0) {
+      cflags += 'K';
+    }
+    if ((_castling[WHITE] & BITS["QSIDE_CASTLE"]) != 0) {
+      cflags += 'Q';
+    }
+    if ((_castling[BLACK] & BITS["KSIDE_CASTLE"]) != 0) {
+      cflags += 'k';
+    }
+    if ((_castling[BLACK] & BITS["QSIDE_CASTLE"]) != 0) {
+      cflags += 'q';
+    }
+
+    /* Do we have an empty castling flag? */
+    cflags = cflags ?? '-';
+    String epflags = _epSquare == EMPTY ? '-' : algebraic(_epSquare);
+
+    return [fen, _turn, cflags, epflags, _halfMoves, _moveNumber].join(' ');
   }
 
   String _swapColor(String color) {
