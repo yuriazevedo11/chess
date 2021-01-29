@@ -1,6 +1,7 @@
 import 'package:chess/components/board_piece.dart';
 import 'package:chess/components/board_row.dart';
 import 'package:chess/models/piece.dart';
+import 'package:chess/models/position.dart';
 import 'package:flutter/material.dart';
 
 class Board extends StatelessWidget {
@@ -11,7 +12,8 @@ class Board extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double size = MediaQuery.of(context).size.width;
+    double boardSize = MediaQuery.of(context).size.width;
+    double pieceSize = boardSize / 8;
 
     List<BoardRow> boardRows = _rowsCount.asMap().entries.map(
       (item) {
@@ -21,22 +23,28 @@ class Board extends StatelessWidget {
 
     List<BoardPiece> pieces = new List();
 
-    board.forEach(
-      (row) => row.forEach(
-        (piece) {
-          if (piece != null) {
-            pieces.add(
-              BoardPiece(piece: piece),
-            );
-          }
-        },
-      ),
-    );
+    board.asMap().forEach(
+          (columnIndex, row) => row.asMap().forEach(
+            (rowIndex, piece) {
+              if (piece != null) {
+                pieces.add(
+                  BoardPiece(
+                    piece: piece,
+                    position: Position(
+                      x: rowIndex * pieceSize,
+                      y: columnIndex * pieceSize,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        );
 
     return Center(
       child: Container(
-        height: size,
-        width: size,
+        height: boardSize,
+        width: boardSize,
         child: Stack(
           children: [
             Column(children: boardRows),
