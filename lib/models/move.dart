@@ -1,11 +1,11 @@
 class Move {
-  final String color;
-  final String from;
-  final String to;
-  final String flags;
-  final String piece;
-  final String promotion;
-  final String captured;
+  String color;
+  String from;
+  String to;
+  String flags;
+  String piece;
+  String promotion;
+  String captured;
 
   Move({
     this.color,
@@ -20,13 +20,5 @@ class Move {
   @override
   String toString() {
     return '{ color: $color, from: $from, to: $to, flags: $flags, piece: $piece, promotion: $promotion, captured: $captured }';
-  }
-
-  set promotion(String promotion) {
-    this.promotion = promotion;
-  }
-
-  set captured(String captured) {
-    this.captured = captured;
   }
 }

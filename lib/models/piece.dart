@@ -1,5 +1,5 @@
 class Piece {
-  final String type;
+  String type;
   final String color;
 
   Piece({this.type, this.color});
