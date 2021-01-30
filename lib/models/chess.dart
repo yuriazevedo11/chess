@@ -1,3 +1,4 @@
+import 'package:chess/models/history.dart';
 import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
 import 'package:chess/models/ugly_move.dart';
@@ -25,6 +26,7 @@ class Chess {
   int _epSquare = EMPTY;
   int _halfMoves = 0;
   int _moveNumber = 1;
+  List<History> _history = [];
 
   Chess([this._fen]) {
     if (_fen == null) {
@@ -121,6 +123,7 @@ class Chess {
     _epSquare = EMPTY;
     _halfMoves = 0;
     _moveNumber = 1;
+    _history = [];
   }
 
   UglyMove _buildMove(
@@ -202,6 +205,7 @@ class Chess {
   void _makeMove(UglyMove move) {
     String us = _turn;
     String them = _swapColor(us);
+    _pushToHistory(move);
 
     _board[move.to] = _board[move.from];
     _board[move.from] = null;
@@ -463,6 +467,7 @@ class Chess {
       if (!_kingAttacked(us)) {
         legalMoves.add(moves[i]);
       }
+      _undoMove();
     }
 
     return legalMoves;
@@ -485,17 +490,16 @@ class Chess {
     return moves;
   }
 
-  Move movePiece(Move move) {
+  Move movePiece(Move move, [dynamic options]) {
     UglyMove moveObj;
 
-    List<UglyMove> moves = _generateMoves();
+    List<UglyMove> moves = _generateMoves(options);
 
     /* Convert the pretty move object to an ugly move object */
     for (int i = 0, len = moves.length; i < len; i++) {
-      if (move.from.toString() == algebraic(moves[i].from) &&
-          move.to.toString() == algebraic(moves[i].to) &&
-          (moves[i].promotion == null ||
-              move.promotion == moves[i].promotion)) {
+      if (move.from == algebraic(moves[i].from) &&
+          move.to == algebraic(moves[i].to) &&
+          move.promotion == moves[i].promotion) {
         moveObj = moves[i];
         break;
       }
@@ -511,6 +515,68 @@ class Chess {
     _makeMove(moveObj);
 
     return prettyMove;
+  }
+
+  UglyMove _undoMove() {
+    History old = _history.removeLast();
+
+    if (old == null) {
+      return null;
+    }
+
+    UglyMove move = old.move;
+    _kings = old.kings;
+    _turn = old.turn;
+    _castling = old.castling;
+    _epSquare = old.epSquare;
+    _halfMoves = old.halfMoves;
+    _moveNumber = old.moveNumber;
+
+    String us = _turn;
+    String them = _swapColor(_turn);
+
+    _board[move.from] = _board[move.to];
+    _board[move.from].type = move.piece; // Undo any promotions
+    _board[move.to] = null;
+
+    if ((move.flags & BITS["CAPTURE"]) != 0) {
+      _board[move.to] = Piece(type: move.captured, color: them);
+    } else if ((move.flags & BITS["EP_CAPTURE"]) != 0) {
+      int index;
+      if (us == BLACK) {
+        index = move.to - 16;
+      } else {
+        index = move.to + 16;
+      }
+      _board[index] = Piece(type: PAWN, color: them);
+    }
+
+    if ((move.flags & (BITS["KSIDE_CASTLE"] | BITS["QSIDE_CASTLE"])) != 0) {
+      int castlingTo, castlingFrom;
+      if ((move.flags & BITS["KSIDE_CASTLE"]) != 0) {
+        castlingTo = move.to + 1;
+        castlingFrom = move.to - 1;
+      } else if ((move.flags & BITS["QSIDE_CASTLE"]) != 0) {
+        castlingTo = move.to - 2;
+        castlingFrom = move.to + 1;
+      }
+
+      _board[castlingTo] = _board[castlingFrom];
+      _board[castlingFrom] = null;
+    }
+
+    return move;
+  }
+
+  void _pushToHistory(UglyMove move) {
+    _history.add(History(
+        move: move,
+        kings: {'b': _kings["b"], 'w': _kings["w"]},
+        turn: _turn,
+        castling: {'b': _castling["b"], 'w': _castling["w"]},
+        epSquare: _epSquare,
+        halfMoves: _halfMoves,
+        moveNumber: _moveNumber));
   }
 
   Piece getPiece(String square) {
