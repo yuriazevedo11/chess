@@ -421,10 +421,11 @@ class Chess {
     }
 
     /* Check for castling if:
-     * a) we're generating all moves, or
-     * b) we're doing single square move generation on the king's square
+     * a) it's turned on;
+     * b) we're generating all moves, and
+     * c) we're doing single square move generation on the king's square
      */
-    if (!singleSquare || lastSq == _kings[us]) {
+    if (_castling[us] != -1 && (!singleSquare || lastSq == _kings[us])) {
       /* King-side castling */
       if ((_castling[us] & BITS["KSIDE_CASTLE"]) != 0) {
         int castlingFrom = _kings[us];
