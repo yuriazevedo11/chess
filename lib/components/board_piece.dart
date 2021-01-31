@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 
 class BoardPiece extends StatefulWidget {
   final Piece piece;
+  final String player;
+  final bool Function(String, String) isMoveValid;
   final Position position;
 
   BoardPiece({
     @required this.piece,
+    @required this.player,
+    @required this.isMoveValid,
     @required this.position,
   });
 
@@ -22,49 +26,61 @@ class _BoardPieceState extends State<BoardPiece> {
 
   @override
   void initState() {
+    position = Position(x: widget.position.x, y: widget.position.y);
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant BoardPiece oldWidget) {
+    super.didUpdateWidget(oldWidget);
     position = Position(x: widget.position.x, y: widget.position.y);
   }
 
   @override
   Widget build(BuildContext context) {
     double size = MediaQuery.of(context).size.width / 8;
+    bool isPiecePlayable = widget.piece.color == widget.player;
 
     return Positioned(
       top: position.y,
       left: position.x,
       child: GestureDetector(
-        onPanStart: (DragStartDetails details) {
-          setState(() {
-            from = positionToSquare(position, size);
-          });
-        },
-        onPanUpdate: (DragUpdateDetails details) {
-          setState(() {
-            position = Position(
-              x: position.x + details.delta.dx,
-              y: position.y + details.delta.dy,
-            );
-          });
-        },
-        onPanEnd: (DragEndDetails details) {
-          String square = positionToSquare(position, size);
-          Position boardPosition = squareToPosision(square, size);
+        onPanStart: isPiecePlayable
+            ? (DragStartDetails details) {
+                setState(() {
+                  from = positionToSquare(position, size);
+                });
+              }
+            : null,
+        onPanUpdate: isPiecePlayable
+            ? (DragUpdateDetails details) {
+                setState(() {
+                  position = Position(
+                    x: position.x + details.delta.dx,
+                    y: position.y + details.delta.dy,
+                  );
+                });
+              }
+            : null,
+        onPanEnd: isPiecePlayable
+            ? (DragEndDetails details) {
+                String to = positionToSquare(position, size);
+                Position boardPosition = squareToPosision(to, size);
 
-          // TODO validade move
-          print({'from': from, 'to': square});
+                bool isMoveValid = widget.isMoveValid(from, to);
 
-          // If move is valid, move piece and update board
-          setState(() {
-            position = boardPosition;
-            // TODO update board
-          });
-
-          // If move is not valid, return piece to initial position
-          // setState(() {
-          //   position = Position(x: widget.position.x, y: widget.position.y);
-          // });
-        },
+                setState(() {
+                  if (isMoveValid) {
+                    position = boardPosition;
+                  } else {
+                    position = Position(
+                      x: widget.position.x,
+                      y: widget.position.y,
+                    );
+                  }
+                });
+              }
+            : null,
         child: Image(
           height: size,
           width: size,

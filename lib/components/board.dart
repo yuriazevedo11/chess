@@ -6,9 +6,16 @@ import 'package:flutter/material.dart';
 
 class Board extends StatelessWidget {
   final _rowsCount = List.filled(8, null);
-  final List<List<Piece>> board;
 
-  Board({@required this.board});
+  final String player;
+  final List<List<Piece>> board;
+  final bool Function(String, String) isMoveValid;
+
+  Board({
+    @required this.player,
+    @required this.board,
+    @required this.isMoveValid,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +37,8 @@ class Board extends StatelessWidget {
                 pieces.add(
                   BoardPiece(
                     piece: piece,
+                    player: player,
+                    isMoveValid: isMoveValid,
                     position: Position(
                       x: rowIndex * pieceSize,
                       y: columnIndex * pieceSize,

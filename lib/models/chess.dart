@@ -40,6 +40,10 @@ class Chess {
     return _generateFen();
   }
 
+  String get player {
+    return _turn;
+  }
+
   void reset() {
     _init(DEFAULT_POSITION);
   }
