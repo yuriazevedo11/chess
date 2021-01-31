@@ -55,7 +55,7 @@ class Chess {
 
     _clear();
 
-    for (var i = 0; i < position.length; i++) {
+    for (int i = 0; i < position.length; i++) {
       String piece = position[i];
 
       if (piece == '/') {
@@ -156,7 +156,7 @@ class Chess {
   }
 
   bool _attacked(String color, int square) {
-    for (var i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
+    for (int i = SQUARES["a8"]; i <= SQUARES["h1"]; i++) {
       /* Did we run off the end of the board? */
       if ((i & 0x88) != 0) {
         i += 7;
@@ -166,9 +166,9 @@ class Chess {
       /* If empty square or wrong color */
       if (_board[i] == null || _board[i].color != color) continue;
 
-      var piece = _board[i];
-      var difference = i - square;
-      var index = difference + 119;
+      Piece piece = _board[i];
+      int difference = i - square;
+      int index = difference + 119;
 
       if ((ATTACKS[index] & (1 << SHIFTS[piece.type])) != 0) {
         if (piece.type == PAWN) {
@@ -183,10 +183,10 @@ class Chess {
         /* If the piece is a knight or a king */
         if (piece.type == 'n' || piece.type == 'k') return true;
 
-        var offset = RAYS[index];
-        var j = i + offset;
+        int offset = RAYS[index];
+        int j = i + offset;
 
-        var blocked = false;
+        bool blocked = false;
         while (j != square) {
           if (_board[j] != null) {
             blocked = true;
@@ -230,13 +230,13 @@ class Chess {
 
       /* If we castled, move the rook next to the king */
       if ((move.flags & BITS["KSIDE_CASTLE"]) != 0) {
-        var castlingTo = move.to - 1;
-        var castlingFrom = move.to + 1;
+        int castlingTo = move.to - 1;
+        int castlingFrom = move.to + 1;
         _board[castlingTo] = _board[castlingFrom];
         _board[castlingFrom] = null;
       } else if ((move.flags & BITS["QSIDE_CASTLE"]) != 0) {
-        var castlingTo = move.to + 1;
-        var castlingFrom = move.to - 2;
+        int castlingTo = move.to + 1;
+        int castlingFrom = move.to - 2;
         _board[castlingTo] = _board[castlingFrom];
         _board[castlingFrom] = null;
       }
@@ -295,7 +295,7 @@ class Chess {
   }
 
   Move _makePretty(UglyMove uglyMove) {
-    var flags = '';
+    String flags = '';
 
     for (String flag in BITS.keys) {
       if ((BITS[flag] & uglyMove.flags) != 0) {
@@ -360,7 +360,7 @@ class Chess {
       }
     }
 
-    for (var i = firstSq; i <= lastSq; i++) {
+    for (int i = firstSq; i <= lastSq; i++) {
       /* Did we run off the end of the board? */
       if ((i & 0x88) != 0) {
         i += 7;
@@ -462,7 +462,7 @@ class Chess {
 
     /* Filter out illegal moves */
     List<UglyMove> legalMoves = [];
-    for (var i = 0, len = moves.length; i < len; i++) {
+    for (int i = 0, len = moves.length; i < len; i++) {
       _makeMove(moves[i]);
       if (!_kingAttacked(us)) {
         legalMoves.add(moves[i]);
@@ -483,7 +483,7 @@ class Chess {
     List<UglyMove> uglyMoves = _generateMoves(options);
     List<Move> moves = [];
 
-    for (var i = 0, len = uglyMoves.length; i < len; i++) {
+    for (int i = 0, len = uglyMoves.length; i < len; i++) {
       moves.add(_makePretty(uglyMoves[i]));
     }
 
@@ -569,14 +569,17 @@ class Chess {
   }
 
   void _pushToHistory(UglyMove move) {
-    _history.add(History(
+    _history.add(
+      History(
         move: move,
         kings: {'b': _kings["b"], 'w': _kings["w"]},
         turn: _turn,
         castling: {'b': _castling["b"], 'w': _castling["w"]},
         epSquare: _epSquare,
         halfMoves: _halfMoves,
-        moveNumber: _moveNumber));
+        moveNumber: _moveNumber,
+      ),
+    );
   }
 
   Piece getPiece(String square) {
@@ -596,7 +599,7 @@ class Chess {
       return false;
     }
 
-    var sq = SQUARES[square];
+    int sq = SQUARES[square];
 
     /* Don't let the user place more than one king */
     if (piece.type == KING &&
