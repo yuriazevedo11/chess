@@ -21,19 +21,19 @@ class BoardPiece extends StatefulWidget {
 }
 
 class _BoardPieceState extends State<BoardPiece> {
-  Position position;
-  String from;
+  Position _position;
+  String _from;
 
   @override
   void initState() {
-    position = Position(x: widget.position.x, y: widget.position.y);
+    _position = Position(x: widget.position.x, y: widget.position.y);
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant BoardPiece oldWidget) {
     super.didUpdateWidget(oldWidget);
-    position = Position(x: widget.position.x, y: widget.position.y);
+    _position = Position(x: widget.position.x, y: widget.position.y);
   }
 
   @override
@@ -42,41 +42,34 @@ class _BoardPieceState extends State<BoardPiece> {
     bool isPiecePlayable = widget.piece.color == widget.player;
 
     return Positioned(
-      top: position.y,
-      left: position.x,
+      top: _position.y,
+      left: _position.x,
       child: GestureDetector(
         onPanStart: isPiecePlayable
             ? (DragStartDetails details) {
                 setState(() {
-                  from = positionToSquare(position, size);
+                  _from = positionToSquare(_position, size);
                 });
               }
             : null,
         onPanUpdate: isPiecePlayable
             ? (DragUpdateDetails details) {
                 setState(() {
-                  position = Position(
-                    x: position.x + details.delta.dx,
-                    y: position.y + details.delta.dy,
+                  _position = Position(
+                    x: _position.x + details.delta.dx,
+                    y: _position.y + details.delta.dy,
                   );
                 });
               }
             : null,
         onPanEnd: isPiecePlayable
             ? (DragEndDetails details) {
-                String to = positionToSquare(position, size);
-                Position boardPosition = squareToPosision(to, size);
-
-                bool isMoveValid = widget.isMoveValid(from, to);
+                String to = positionToSquare(_position, size);
+                bool isMoveValid = widget.isMoveValid(_from, to);
 
                 setState(() {
-                  if (isMoveValid) {
-                    position = boardPosition;
-                  } else {
-                    position = Position(
-                      x: widget.position.x,
-                      y: widget.position.y,
-                    );
+                  if (!isMoveValid) {
+                    _position = widget.position;
                   }
                 });
               }
