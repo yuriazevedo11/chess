@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-const BLACK = Color.fromRGBO(100, 133, 68, 1);
-const WHITE = Color.fromRGBO(230, 233, 198, 1);
+const BLACK = Color(0xFFB0BEC5);
+const WHITE = Color(0xFFFFFFFF);
 
 class BoardSquare extends StatelessWidget {
   final int rowIndex;
