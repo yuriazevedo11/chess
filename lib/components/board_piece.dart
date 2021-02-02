@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 class BoardPiece extends StatefulWidget {
   final Piece piece;
   final String player;
-  final bool Function(String, String) isMoveValid;
   final Position position;
-  final void Function(Position) setMarkerPosition;
+  final bool Function(String, String) isMoveValid;
+  final void Function(Position, [double]) setMarkerPosition;
 
   BoardPiece({
     @required this.piece,
@@ -49,7 +49,7 @@ class _BoardPieceState extends State<BoardPiece> {
       child: GestureDetector(
         onPanStart: isPiecePlayable
             ? (DragStartDetails details) {
-                widget.setMarkerPosition(_position);
+                widget.setMarkerPosition(_position, size);
                 setState(() {
                   _from = positionToSquare(_position, size);
                 });

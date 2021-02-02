@@ -37,6 +37,17 @@ class _ChessAppState extends State<ChessApp> {
     return true;
   }
 
+  List<String> _getPossibleMovesFrom(String square) {
+    List<Move> moves = chess.possibleMoves();
+
+    List<String> possibleMoves = moves
+        .where((move) => move.from == square)
+        .map((move) => move.to)
+        .toList();
+
+    return possibleMoves;
+  }
+
   void _updateBoard() {
     setState(() {
       board = chess.board();
@@ -55,6 +66,7 @@ class _ChessAppState extends State<ChessApp> {
               board: board,
               player: player,
               isMoveValid: _isMoveValid,
+              getPossibleMovesFrom: _getPossibleMovesFrom,
             );
           },
         ),
