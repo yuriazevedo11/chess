@@ -1,12 +1,12 @@
 import 'package:chess/components/board_piece.dart';
 import 'package:chess/components/board_row.dart';
+import 'package:chess/components/square_marker.dart';
 import 'package:chess/models/piece.dart';
 import 'package:chess/models/position.dart';
+import 'package:chess/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-class Board extends StatelessWidget {
-  final _rowsCount = List.filled(8, null);
-
+class Board extends StatefulWidget {
   final String player;
   final List<List<Piece>> board;
   final bool Function(String, String) isMoveValid;
@@ -16,6 +16,20 @@ class Board extends StatelessWidget {
     @required this.board,
     @required this.isMoveValid,
   });
+
+  @override
+  _BoardState createState() => _BoardState();
+}
+
+class _BoardState extends State<Board> {
+  final _rowsCount = List.filled(8, null);
+  Position _from;
+
+  void _setMarkerPosition(Position from) {
+    setState(() {
+      _from = from;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +44,16 @@ class Board extends StatelessWidget {
 
     List<BoardPiece> pieces = new List();
 
-    board.asMap().forEach(
+    widget.board.asMap().forEach(
           (columnIndex, row) => row.asMap().forEach(
             (rowIndex, piece) {
               if (piece != null) {
                 pieces.add(
                   BoardPiece(
                     piece: piece,
-                    player: player,
-                    isMoveValid: isMoveValid,
+                    player: widget.player,
+                    isMoveValid: widget.isMoveValid,
+                    setMarkerPosition: _setMarkerPosition,
                     position: Position(
                       x: rowIndex * pieceSize,
                       y: columnIndex * pieceSize,
@@ -50,6 +65,10 @@ class Board extends StatelessWidget {
           ),
         );
 
+    if (widget.player == BLACK) {
+      pieces = pieces.reversed.toList();
+    }
+
     return Center(
       child: Container(
         height: boardSize,
@@ -57,6 +76,7 @@ class Board extends StatelessWidget {
         child: Stack(
           children: [
             Column(children: boardRows),
+            SquareMarker(from: _from, pieceSize: pieceSize),
             ...pieces,
           ],
         ),

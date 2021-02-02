@@ -8,12 +8,14 @@ class BoardPiece extends StatefulWidget {
   final String player;
   final bool Function(String, String) isMoveValid;
   final Position position;
+  final void Function(Position) setMarkerPosition;
 
   BoardPiece({
     @required this.piece,
     @required this.player,
     @required this.isMoveValid,
     @required this.position,
+    @required this.setMarkerPosition,
   });
 
   @override
@@ -32,8 +34,8 @@ class _BoardPieceState extends State<BoardPiece> {
 
   @override
   void didUpdateWidget(covariant BoardPiece oldWidget) {
-    super.didUpdateWidget(oldWidget);
     _position = Position(x: widget.position.x, y: widget.position.y);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -47,6 +49,7 @@ class _BoardPieceState extends State<BoardPiece> {
       child: GestureDetector(
         onPanStart: isPiecePlayable
             ? (DragStartDetails details) {
+                widget.setMarkerPosition(_position);
                 setState(() {
                   _from = positionToSquare(_position, size);
                 });
@@ -66,6 +69,7 @@ class _BoardPieceState extends State<BoardPiece> {
             ? (DragEndDetails details) {
                 String to = positionToSquare(_position, size);
                 bool isMoveValid = widget.isMoveValid(_from, to);
+                widget.setMarkerPosition(null);
 
                 setState(() {
                   if (!isMoveValid) {
