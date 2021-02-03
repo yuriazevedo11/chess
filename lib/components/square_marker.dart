@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 class SquareMarker extends StatelessWidget {
   final Position position;
   final double pieceSize;
+  final Color color;
 
   const SquareMarker({
     @required this.position,
     @required this.pieceSize,
+    @required this.color,
   });
 
   @override
@@ -18,7 +20,7 @@ class SquareMarker extends StatelessWidget {
       child: Container(
         height: pieceSize,
         width: pieceSize,
-        color: Colors.yellow[300].withOpacity(position == null ? 0 : 0.5),
+        color: color.withOpacity(position == null ? 0 : 0.5),
       ),
     );
   }

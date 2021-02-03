@@ -2,6 +2,7 @@ import 'package:chess/components/board.dart';
 import 'package:chess/models/chess.dart';
 import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
+import 'package:chess/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class ChessApp extends StatefulWidget {
@@ -13,6 +14,7 @@ class _ChessAppState extends State<ChessApp> {
   static final Chess chess = Chess();
   List<List<Piece>> board;
   String player;
+  String inCheck;
 
   @override
   initState() {
@@ -52,6 +54,16 @@ class _ChessAppState extends State<ChessApp> {
     setState(() {
       board = chess.board();
       player = chess.player;
+
+      if (chess.isInCheck()) {
+        List<Move> moves = chess.possibleMoves();
+        inCheck = moves
+            .where((move) => move.piece == KING && move.color == chess.player)
+            .first
+            .from;
+      } else {
+        inCheck = null;
+      }
     });
   }
 
@@ -67,6 +79,7 @@ class _ChessAppState extends State<ChessApp> {
               player: player,
               isMoveValid: _isMoveValid,
               getPossibleMovesFrom: _getPossibleMovesFrom,
+              inCheck: inCheck,
             );
           },
         ),

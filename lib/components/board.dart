@@ -13,12 +13,14 @@ class Board extends StatefulWidget {
   final List<List<Piece>> board;
   final bool Function(String, String) isMoveValid;
   final List<String> Function(String) getPossibleMovesFrom;
+  final String inCheck;
 
   Board({
     @required this.player,
     @required this.board,
     @required this.isMoveValid,
     @required this.getPossibleMovesFrom,
+    @required this.inCheck,
   });
 
   @override
@@ -55,6 +57,10 @@ class _BoardState extends State<Board> {
   Widget build(BuildContext context) {
     double boardSize = MediaQuery.of(context).size.width;
     double pieceSize = boardSize / 8;
+
+    Position checkPosition = widget.inCheck != null
+        ? squareToPosision(widget.inCheck, pieceSize)
+        : null;
 
     List<BoardRow> boardRows = _rowsCount.asMap().entries.map(
       (item) {
@@ -106,7 +112,16 @@ class _BoardState extends State<Board> {
           children: [
             Column(children: boardRows),
             ...hints,
-            SquareMarker(position: _from, pieceSize: pieceSize),
+            SquareMarker(
+              position: checkPosition,
+              pieceSize: pieceSize,
+              color: Colors.red,
+            ),
+            SquareMarker(
+              position: _from,
+              pieceSize: pieceSize,
+              color: Colors.yellow[300],
+            ),
             ...pieces,
           ],
         ),
