@@ -722,4 +722,103 @@ class Chess {
   _kingAttacked(String color) {
     return _attacked(_swapColor(color), _kings[color]);
   }
+
+  bool isInCheck() {
+    return _kingAttacked(_turn);
+  }
+
+  bool isInCheckmate() {
+    return isInCheck() && _generateMoves().length == 0;
+  }
+
+  bool _isInStalemate() {
+    return !isInCheck() && _generateMoves().length == 0;
+  }
+
+  bool isInDraw() {
+    return _halfMoves >= 100 ||
+        _isInStalemate() ||
+        _insufficientMaterial() ||
+        _inThreefoldRepetition();
+  }
+
+  bool isInGameOver() {
+    return isInCheckmate() || isInDraw();
+  }
+
+  bool _insufficientMaterial() {
+    var pieces = {};
+    List<int> bishops = [];
+    int numPieces = 0;
+    int squareColor = 0;
+
+    for (int i = SQUARES['a8']; i <= SQUARES['h1']; i++) {
+      squareColor = (squareColor + 1) % 2;
+      if ((i & 0x88) != 0) {
+        i += 7;
+        continue;
+      }
+
+      Piece piece = _board[i];
+      if (piece != null) {
+        String type = piece.type;
+        pieces[piece.type] = pieces.containsKey(type) ? pieces[type] + 1 : 1;
+        if (type == BISHOP) {
+          bishops.add(squareColor);
+        }
+        numPieces++;
+      }
+    }
+
+    /* k vs. k */
+    if (numPieces == 2) {
+      return true;
+    } else if (
+        /* k vs. kn .... or .... k vs. kb */
+        numPieces == 3 && (pieces[BISHOP] == 1 || pieces[KNIGHT] == 1)) {
+      return true;
+    } else if (numPieces == pieces[BISHOP] + 2) {
+      /* kb vs. kb where any number of bishops are all on the same color */
+      int sum = 0;
+      int len = bishops.length;
+      for (int i = 0; i < len; i++) {
+        sum += bishops[i];
+      }
+      if (sum == 0 || sum == len) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _inThreefoldRepetition() {
+    List<UglyMove> moves = [];
+    var positions = {};
+    bool repetition = false;
+
+    while (true) {
+      UglyMove move = _undoMove();
+      if (move != null) break;
+      moves.add(move);
+    }
+
+    while (true) {
+      /* Remove the last two fields in the FEN string, they're not needed when checking for draw by rep */
+      String fen = _generateFen().split(' ').getRange(0, 4).join(' ');
+
+      /* Has the position occurred three or move times? */
+      positions[fen] = positions.containsKey(fen) ? positions[fen] + 1 : 1;
+      if (positions[fen] >= 3) {
+        repetition = true;
+      }
+
+      if (moves.length == 0) {
+        break;
+      }
+      _makeMove(moves.removeLast());
+    }
+
+    return repetition;
+  }
 }
