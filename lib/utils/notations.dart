@@ -9,7 +9,7 @@ String positionToSquare(Position gesturePosition, double size) {
   return column + row;
 }
 
-Position squareToPosision(String square, double size) {
+Position squareToPosition(String square, double size) {
   List<String> tokens = square.split('');
   String column = tokens[0];
   String row = tokens[1];

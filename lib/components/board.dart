@@ -45,7 +45,7 @@ class _BoardState extends State<Board> {
         List<String> moves = widget.getPossibleMovesFrom(square);
 
         List<Position> hints =
-            moves.map((element) => squareToPosision(element, size)).toList();
+            moves.map((element) => squareToPosition(element, size)).toList();
         _possibleMoves = hints;
       }
 
@@ -59,7 +59,7 @@ class _BoardState extends State<Board> {
     double pieceSize = boardSize / 8;
 
     Position checkPosition = widget.inCheck != null
-        ? squareToPosision(widget.inCheck, pieceSize)
+        ? squareToPosition(widget.inCheck, pieceSize)
         : null;
 
     List<BoardRow> boardRows = _rowsCount.asMap().entries.map(
