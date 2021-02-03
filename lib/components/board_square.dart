@@ -1,3 +1,4 @@
+import 'package:chess/utils/dimensions.dart';
 import 'package:flutter/material.dart';
 
 const BLACK = Color(0xFFB0BEC5);
@@ -11,7 +12,7 @@ class BoardSquare extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double size = MediaQuery.of(context).size.width / 8;
+    double size = getSquareSize(context);
     int rowOffset = rowIndex % 2 == 0 ? 1 : 0;
     bool isWhite = (columnIndex + rowOffset) % 2 == 1;
 

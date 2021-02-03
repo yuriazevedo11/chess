@@ -1,5 +1,6 @@
 import 'package:chess/models/piece.dart';
 import 'package:chess/models/position.dart';
+import 'package:chess/utils/dimensions.dart';
 import 'package:chess/utils/notations.dart';
 import 'package:flutter/material.dart';
 
@@ -40,7 +41,7 @@ class _BoardPieceState extends State<BoardPiece> {
 
   @override
   Widget build(BuildContext context) {
-    double size = MediaQuery.of(context).size.width / 8;
+    double size = getSquareSize(context);
     bool isPiecePlayable = widget.piece.color == widget.player;
 
     return Positioned(

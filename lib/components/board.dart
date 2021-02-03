@@ -5,6 +5,7 @@ import 'package:chess/components/square_marker.dart';
 import 'package:chess/models/piece.dart';
 import 'package:chess/models/position.dart';
 import 'package:chess/utils/constants.dart';
+import 'package:chess/utils/dimensions.dart';
 import 'package:chess/utils/notations.dart';
 import 'package:flutter/material.dart';
 
@@ -55,8 +56,8 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
-    double boardSize = MediaQuery.of(context).size.width;
-    double pieceSize = boardSize / 8;
+    double boardSize = getBoardSize(context);
+    double pieceSize = getSquareSize(context);
 
     Position checkPosition = widget.inCheck != null
         ? squareToPosition(widget.inCheck, pieceSize)
@@ -114,12 +115,10 @@ class _BoardState extends State<Board> {
             ...hints,
             SquareMarker(
               position: checkPosition,
-              pieceSize: pieceSize,
               color: Colors.red,
             ),
             SquareMarker(
               position: _from,
-              pieceSize: pieceSize,
               color: Colors.yellow[300],
             ),
             ...pieces,
