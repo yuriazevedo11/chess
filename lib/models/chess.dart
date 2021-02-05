@@ -664,8 +664,9 @@ class Chess {
 
   List<String> getPiecePositions(Piece piece) {
     List<int> boardIndexes = [];
+    List<Piece> flatten = board().expand((element) => element).toList();
 
-    _board.asMap().forEach((index, element) {
+    flatten.asMap().forEach((index, element) {
       if (element?.color == piece.color && element?.type == piece.type) {
         boardIndexes.add(index);
       }
