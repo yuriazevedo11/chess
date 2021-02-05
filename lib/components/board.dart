@@ -69,16 +69,10 @@ class _BoardState extends State<Board> {
       },
     ).toList();
 
-    List<HintMove> hints = _possibleMoves
-        .map(
-          (position) => HintMove(
-            position: position,
-            pieceSize: pieceSize,
-          ),
-        )
-        .toList();
+    List<HintMove> hints =
+        _possibleMoves.map((position) => HintMove(position: position)).toList();
 
-    List<BoardPiece> pieces = new List();
+    List<BoardPiece> pieces = [];
 
     widget.board.asMap().forEach(
           (columnIndex, row) => row.asMap().forEach(

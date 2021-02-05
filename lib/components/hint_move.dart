@@ -1,33 +1,41 @@
 import 'package:chess/models/position.dart';
+import 'package:chess/utils/dimensions.dart';
 import 'package:flutter/material.dart';
 
 class HintMove extends StatelessWidget {
   final Position position;
-  final double pieceSize;
 
-  const HintMove({
-    @required this.position,
-    @required this.pieceSize,
-  });
+  const HintMove({@required this.position});
 
   @override
   Widget build(BuildContext context) {
-    double circleSize = pieceSize / 2;
+    double outerCircleSize = getSquareSize(context);
+    double innerCircleSize = outerCircleSize / 2.5;
+
+    Color color = Colors.grey.withOpacity(position == null ? 0 : 0.6);
+    BorderRadius borderRadius = BorderRadius.circular(outerCircleSize);
 
     return Positioned(
       top: position?.y,
       left: position?.x,
       child: Container(
-        height: pieceSize,
-        width: pieceSize,
+        height: outerCircleSize,
+        width: outerCircleSize,
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 4.0,
+            color: color,
+          ),
+          borderRadius: borderRadius,
+        ),
         child: Center(
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(circleSize),
-              color: Colors.grey.withOpacity(position == null ? 0 : 0.6),
+              borderRadius: borderRadius,
+              color: color,
             ),
-            height: circleSize,
-            width: circleSize,
+            height: innerCircleSize,
+            width: innerCircleSize,
           ),
         ),
       ),
