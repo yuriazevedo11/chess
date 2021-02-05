@@ -662,6 +662,24 @@ class Chess {
     return output;
   }
 
+  List<String> getPiecePositions(Piece piece) {
+    List<int> boardIndexes = [];
+
+    _board.asMap().forEach((index, element) {
+      if (element?.color == piece.color && element?.type == piece.type) {
+        boardIndexes.add(index);
+      }
+    });
+
+    List<String> squares = boardIndexes.map((pieceIndex) {
+      String row = 'abcdefgh'[pieceIndex % 8];
+      int column = ((64 - pieceIndex) / 8).ceil();
+      return row + column.toString();
+    }).toList();
+
+    return squares;
+  }
+
   String _generateFen() {
     int empty = 0;
     String fen = '';

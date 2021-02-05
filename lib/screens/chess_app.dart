@@ -56,11 +56,12 @@ class _ChessAppState extends State<ChessApp> {
       player = chess.player;
 
       if (chess.isInCheck()) {
-        List<Move> moves = chess.possibleMoves();
-        inCheck = moves
-            .where((move) => move.piece == KING && move.color == chess.player)
-            .first
-            .from;
+        Piece king = Piece(
+          type: KING,
+          color: chess.player,
+        );
+
+        inCheck = chess.getPiecePositions(king).first;
       } else {
         inCheck = null;
       }
