@@ -1,4 +1,5 @@
 import 'package:chess/components/board.dart';
+import 'package:chess/components/menu_dialog.dart';
 import 'package:chess/models/chess.dart';
 import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
@@ -13,6 +14,7 @@ class ChessApp extends StatefulWidget {
 }
 
 class _ChessAppState extends State<ChessApp> {
+  final navigatorKey = GlobalKey<NavigatorState>();
   static final Chess chess = Chess();
   List<List<Piece>> board;
   String player;
@@ -79,6 +81,7 @@ class _ChessAppState extends State<ChessApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       home: Scaffold(
         backgroundColor: Colors.grey[900],
         body: LayoutBuilder(
@@ -92,6 +95,17 @@ class _ChessAppState extends State<ChessApp> {
               isSquareOccupied: _isSquareOccupied,
             );
           },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            final navigatorContext = navigatorKey.currentState.overlay.context;
+            showDialog(
+              context: navigatorContext,
+              builder: (ctx) => MenuDialog(),
+            );
+          },
+          child: Icon(Icons.menu),
+          backgroundColor: Colors.blueGrey,
         ),
       ),
     );
