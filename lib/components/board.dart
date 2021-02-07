@@ -12,9 +12,9 @@ import 'package:flutter/material.dart';
 class Board extends StatefulWidget {
   final String player;
   final List<List<Piece>> board;
+  final String inCheck;
   final bool Function(String, String) isMoveValid;
   final List<String> Function(String) getPossibleMovesFrom;
-  final String inCheck;
 
   Board({
     @required this.player,
@@ -54,6 +54,15 @@ class _BoardState extends State<Board> {
     });
   }
 
+  void _moveFromHint(String to, double size) {
+    String squareFrom = positionToSquare(_from, size);
+    widget.isMoveValid(squareFrom, to);
+
+    setState(() {
+      _from = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double boardSize = getBoardSize(context);
@@ -69,8 +78,14 @@ class _BoardState extends State<Board> {
       },
     ).toList();
 
-    List<HintMove> hints =
-        _possibleMoves.map((position) => HintMove(position: position)).toList();
+    List<HintMove> hints = _possibleMoves
+        .map(
+          (position) => HintMove(
+            position: position,
+            moveFromHint: _moveFromHint,
+          ),
+        )
+        .toList();
 
     List<BoardPiece> pieces = [];
 
@@ -106,7 +121,6 @@ class _BoardState extends State<Board> {
         child: Stack(
           children: [
             Column(children: boardRows),
-            ...hints,
             SquareMarker(
               position: checkPosition,
               color: Colors.red,
@@ -116,6 +130,7 @@ class _BoardState extends State<Board> {
               color: Colors.yellow[300],
             ),
             ...pieces,
+            ...hints,
           ],
         ),
       ),

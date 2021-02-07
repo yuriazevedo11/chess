@@ -70,11 +70,12 @@ class _BoardPieceState extends State<BoardPiece> {
             ? (DragEndDetails details) {
                 String to = positionToSquare(_position, size);
                 bool isMoveValid = widget.isMoveValid(_from, to);
-                widget.setMarkerPosition(null);
 
                 setState(() {
                   if (!isMoveValid) {
                     _position = widget.position;
+                  } else {
+                    widget.setMarkerPosition(null);
                   }
                 });
               }
