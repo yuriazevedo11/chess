@@ -6,16 +6,19 @@ import 'package:flutter/material.dart';
 class HintMove extends StatelessWidget {
   final Position position;
   final void Function(String to, double size) moveFromHint;
+  final bool Function(Position position, double size) isSquareOccupied;
 
   const HintMove({
     @required this.position,
     @required this.moveFromHint,
+    @required this.isSquareOccupied,
   });
 
   @override
   Widget build(BuildContext context) {
     double outerCircleSize = getSquareSize(context);
-    double innerCircleSize = outerCircleSize / 2.5;
+    bool squareHasPiece = isSquareOccupied(position, outerCircleSize);
+    double innerCircleSize = outerCircleSize / (squareHasPiece ? 1 : 2);
 
     Color color = Colors.grey.withOpacity(position == null ? 0 : 0.6);
     BorderRadius borderRadius = BorderRadius.circular(outerCircleSize);
@@ -32,18 +35,22 @@ class HintMove extends StatelessWidget {
           height: outerCircleSize,
           width: outerCircleSize,
           decoration: BoxDecoration(
-            border: Border.all(
-              width: 4.0,
-              color: color,
-            ),
+            border: squareHasPiece
+                ? Border.all(
+                    width: 4.0,
+                    color: color,
+                  )
+                : null,
             borderRadius: borderRadius,
           ),
           child: Center(
             child: Container(
-              decoration: BoxDecoration(
-                borderRadius: borderRadius,
-                color: color,
-              ),
+              decoration: !squareHasPiece
+                  ? BoxDecoration(
+                      borderRadius: borderRadius,
+                      color: color,
+                    )
+                  : null,
               height: innerCircleSize,
               width: innerCircleSize,
             ),

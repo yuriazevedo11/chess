@@ -15,13 +15,15 @@ class Board extends StatefulWidget {
   final String inCheck;
   final bool Function(String, String) isMoveValid;
   final List<String> Function(String) getPossibleMovesFrom;
+  final bool Function(Position position, double size) isSquareOccupied;
 
   Board({
     @required this.player,
     @required this.board,
+    @required this.inCheck,
     @required this.isMoveValid,
     @required this.getPossibleMovesFrom,
-    @required this.inCheck,
+    @required this.isSquareOccupied,
   });
 
   @override
@@ -83,6 +85,7 @@ class _BoardState extends State<Board> {
           (position) => HintMove(
             position: position,
             moveFromHint: _moveFromHint,
+            isSquareOccupied: widget.isSquareOccupied,
           ),
         )
         .toList();

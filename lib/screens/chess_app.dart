@@ -2,7 +2,9 @@ import 'package:chess/components/board.dart';
 import 'package:chess/models/chess.dart';
 import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
+import 'package:chess/models/position.dart';
 import 'package:chess/utils/constants.dart';
+import 'package:chess/utils/notations.dart';
 import 'package:flutter/material.dart';
 
 class ChessApp extends StatefulWidget {
@@ -68,6 +70,12 @@ class _ChessAppState extends State<ChessApp> {
     });
   }
 
+  bool _isSquareOccupied(Position position, double size) {
+    String square = positionToSquare(position, size);
+    Piece piece = chess.getPiece(square);
+    return piece == null ? false : true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -78,9 +86,10 @@ class _ChessAppState extends State<ChessApp> {
             return Board(
               board: board,
               player: player,
+              inCheck: inCheck,
               isMoveValid: _isMoveValid,
               getPossibleMovesFrom: _getPossibleMovesFrom,
-              inCheck: inCheck,
+              isSquareOccupied: _isSquareOccupied,
             );
           },
         ),
