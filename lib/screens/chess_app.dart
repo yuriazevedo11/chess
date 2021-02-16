@@ -78,6 +78,14 @@ class _ChessAppState extends State<ChessApp> {
     return piece == null ? false : true;
   }
 
+  void _restartGame() {
+    chess.reset();
+    setState(() {
+      board = chess.board();
+      player = chess.player;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -101,7 +109,7 @@ class _ChessAppState extends State<ChessApp> {
             final navigatorContext = navigatorKey.currentState.overlay.context;
             showDialog(
               context: navigatorContext,
-              builder: (ctx) => MenuDialog(),
+              builder: (ctx) => MenuDialog(restartGame: _restartGame),
             );
           },
           child: Icon(Icons.menu),

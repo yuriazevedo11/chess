@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const SPACING = 15.0;
 const AVATAR_RADIUS = 40.0;
 const BUTTON_WIDTH = 180.0;
 
 class MenuDialog extends StatefulWidget {
+  final void Function() restartGame;
+
+  MenuDialog({@required this.restartGame});
+
   @override
   _MenuDialogState createState() => _MenuDialogState();
 }
 
 class _MenuDialogState extends State<MenuDialog> {
+  _launchRules() async {
+    const url = 'https://en.wikipedia.org/wiki/Rules_of_chess';
+    if (await canLaunch(url)) {
+      await launch(url, forceWebView: true);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -23,6 +37,31 @@ class _MenuDialogState extends State<MenuDialog> {
   }
 
   menuContent(context) {
+    final menuActions = [
+      {
+        'label': 'New game',
+        'icon': Icon(
+          Icons.restore,
+          color: Colors.white,
+        ),
+        'action': () {
+          widget.restartGame();
+          Navigator.of(context).pop();
+        }
+      },
+      {
+        'label': 'Rules',
+        'icon': Icon(
+          Icons.rule_rounded,
+          color: Colors.white,
+        ),
+        'action': () {
+          _launchRules();
+          Navigator.of(context).pop();
+        }
+      },
+    ];
+
     return Stack(
       children: [
         Container(
@@ -56,62 +95,19 @@ class _MenuDialogState extends State<MenuDialog> {
               SizedBox(
                 height: SPACING,
               ),
-              SizedBox(
-                width: BUTTON_WIDTH,
-                child: RaisedButton.icon(
-                  icon: Icon(
-                    Icons.rule_rounded,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  color: Colors.blueGrey[400],
-                  label: Text(
-                    'Rules',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: BUTTON_WIDTH,
-                child: RaisedButton.icon(
-                  icon: Icon(
-                    Icons.restore,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  color: Colors.blueGrey[400],
-                  label: Text(
-                    'New game',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: BUTTON_WIDTH,
-                child: RaisedButton.icon(
-                  icon: Icon(
-                    Icons.undo_rounded,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  color: Colors.blueGrey[400],
-                  label: Text(
-                    'Undo',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
+              ...menuActions.map(
+                (element) => SizedBox(
+                  width: BUTTON_WIDTH,
+                  child: RaisedButton.icon(
+                    icon: element["icon"],
+                    onPressed: element["action"],
+                    color: Colors.blueGrey[400],
+                    label: Text(
+                      element["label"],
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

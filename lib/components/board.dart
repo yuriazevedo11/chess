@@ -37,6 +37,7 @@ class _BoardState extends State<Board> {
 
   @override
   void didUpdateWidget(covariant Board oldWidget) {
+    _from = null;
     _possibleMoves = [];
     super.didUpdateWidget(oldWidget);
   }
@@ -130,7 +131,7 @@ class _BoardState extends State<Board> {
             ),
             SquareMarker(
               position: _from,
-              color: Colors.yellow[300],
+              color: Colors.blue[300],
             ),
             ...pieces,
             ...hints,
