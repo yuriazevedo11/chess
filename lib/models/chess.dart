@@ -840,4 +840,21 @@ class Chess {
 
     return repetition;
   }
+
+  List<Move> get history {
+    List<UglyMove> reversedHistory = [];
+    List<Move> moveHistory = [];
+
+    while (_history.length > 0) {
+      reversedHistory.add(_undoMove());
+    }
+
+    while (reversedHistory.length > 0) {
+      var move = reversedHistory.removeLast();
+      moveHistory.add(_makePretty(move));
+      _makeMove(move);
+    }
+
+    return moveHistory;
+  }
 }
