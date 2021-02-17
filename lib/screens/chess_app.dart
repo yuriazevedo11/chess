@@ -19,6 +19,7 @@ class _ChessAppState extends State<ChessApp> {
   List<List<Piece>> board;
   String player;
   String inCheck;
+  Move lastMove;
 
   @override
   initState() {
@@ -58,6 +59,7 @@ class _ChessAppState extends State<ChessApp> {
     setState(() {
       board = chess.board();
       player = chess.player;
+      lastMove = chess.history.last;
 
       if (chess.isInCheck()) {
         Piece king = Piece(
@@ -83,6 +85,8 @@ class _ChessAppState extends State<ChessApp> {
     setState(() {
       board = chess.board();
       player = chess.player;
+      inCheck = null;
+      lastMove = null;
     });
   }
 
@@ -101,6 +105,7 @@ class _ChessAppState extends State<ChessApp> {
               isMoveValid: _isMoveValid,
               getPossibleMovesFrom: _getPossibleMovesFrom,
               isSquareOccupied: _isSquareOccupied,
+              lastMove: lastMove,
             );
           },
         ),

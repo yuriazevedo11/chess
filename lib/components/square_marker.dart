@@ -2,13 +2,15 @@ import 'package:chess/models/position.dart';
 import 'package:chess/utils/dimensions.dart';
 import 'package:flutter/material.dart';
 
+const DEFAULT_COLOR = Color(0xFF64b5f6);
+
 class SquareMarker extends StatelessWidget {
   final Position position;
   final Color color;
 
-  const SquareMarker({
+  SquareMarker({
     @required this.position,
-    @required this.color,
+    this.color = DEFAULT_COLOR,
   });
 
   @override

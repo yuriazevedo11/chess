@@ -2,6 +2,7 @@ import 'package:chess/components/board_piece.dart';
 import 'package:chess/components/board_row.dart';
 import 'package:chess/components/hint_move.dart';
 import 'package:chess/components/square_marker.dart';
+import 'package:chess/models/move.dart';
 import 'package:chess/models/piece.dart';
 import 'package:chess/models/position.dart';
 import 'package:chess/utils/constants.dart';
@@ -13,6 +14,7 @@ class Board extends StatefulWidget {
   final String player;
   final List<List<Piece>> board;
   final String inCheck;
+  final Move lastMove;
   final bool Function(String, String) isMoveValid;
   final List<String> Function(String) getPossibleMovesFrom;
   final bool Function(Position position, double size) isSquareOccupied;
@@ -21,6 +23,7 @@ class Board extends StatefulWidget {
     @required this.player,
     @required this.board,
     @required this.inCheck,
+    @required this.lastMove,
     @required this.isMoveValid,
     @required this.getPossibleMovesFrom,
     @required this.isSquareOccupied,
@@ -114,6 +117,20 @@ class _BoardState extends State<Board> {
           ),
         );
 
+    List<SquareMarker> lastMovePositions = [];
+
+    if (widget.lastMove != null) {
+      lastMovePositions.add(
+        SquareMarker(
+            position: squareToPosition(widget.lastMove.from, pieceSize)),
+      );
+      lastMovePositions.add(
+        SquareMarker(
+          position: squareToPosition(widget.lastMove.to, pieceSize),
+        ),
+      );
+    }
+
     if (widget.player == BLACK) {
       pieces = pieces.reversed.toList();
     }
@@ -129,10 +146,8 @@ class _BoardState extends State<Board> {
               position: checkPosition,
               color: Colors.red,
             ),
-            SquareMarker(
-              position: _from,
-              color: Colors.blue[300],
-            ),
+            SquareMarker(position: _from),
+            ...lastMovePositions,
             ...pieces,
             ...hints,
           ],
