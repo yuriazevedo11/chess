@@ -4,11 +4,13 @@ import 'package:url_launcher/url_launcher.dart';
 const SPACING = 15.0;
 const AVATAR_RADIUS = 40.0;
 const BUTTON_WIDTH = 180.0;
+const RULES_URL = 'https://en.wikipedia.org/wiki/Rules_of_chess';
 
 class MenuDialog extends StatefulWidget {
-  final void Function() restartGame;
+  final String title;
+  final VoidCallback restartGame;
 
-  MenuDialog({@required this.restartGame});
+  MenuDialog({this.title, @required this.restartGame});
 
   @override
   _MenuDialogState createState() => _MenuDialogState();
@@ -16,11 +18,10 @@ class MenuDialog extends StatefulWidget {
 
 class _MenuDialogState extends State<MenuDialog> {
   _launchRules() async {
-    const url = 'https://en.wikipedia.org/wiki/Rules_of_chess';
-    if (await canLaunch(url)) {
-      await launch(url, forceWebView: true);
+    if (await canLaunch(RULES_URL)) {
+      await launch(RULES_URL, forceWebView: true);
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch $RULES_URL';
     }
   }
 
@@ -89,7 +90,7 @@ class _MenuDialogState extends State<MenuDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Menu',
+                widget.title ?? 'Menu',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
               ),
               SizedBox(
