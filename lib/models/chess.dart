@@ -523,11 +523,11 @@ class Chess {
   }
 
   UglyMove _undoMove() {
-    History old = _history.removeLast();
-
-    if (old == null) {
+    if (_history.length == 0) {
       return null;
     }
+
+    History old = _history.removeLast();
 
     UglyMove move = old.move;
     _kings = old.kings;
@@ -818,7 +818,7 @@ class Chess {
 
     while (true) {
       UglyMove move = _undoMove();
-      if (move != null) break;
+      if (move == null) break;
       moves.add(move);
     }
 
