@@ -61,6 +61,30 @@ class _ChessAppState extends State<ChessApp> {
       player = chess.player;
       lastMove = chess.history.last;
 
+      if (chess.isInGameOver()) {
+        String title;
+
+        if (chess.isInDraw()) {
+          title = 'Draw 😑';
+        } else if (player == WHITE) {
+          title = 'You lose 😞';
+        } else {
+          title = 'You win 🎉';
+        }
+
+        final navigatorContext = navigatorKey.currentState.overlay.context;
+        showDialog(
+          context: navigatorContext,
+          barrierDismissible: false,
+          builder: (ctx) => MenuDialog(
+            title: title,
+            restartGame: _restartGame,
+          ),
+        );
+
+        return;
+      }
+
       if (chess.isInCheck()) {
         Piece king = Piece(
           type: KING,
