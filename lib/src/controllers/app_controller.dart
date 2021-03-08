@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'chess_controller.dart';
 
 class AppController extends ChangeNotifier {
-  static final instance = AppController();
+  static final AppController _inst = AppController._internal();
   static final navigatorKey = GlobalKey<NavigatorState>();
   static final ChessController _chess = ChessController();
 
@@ -18,9 +18,13 @@ class AppController extends ChangeNotifier {
   String inCheck;
   Move lastMove;
 
-  AppController() {
+  AppController._internal() {
     board = _chess.board();
     player = _chess.player;
+  }
+
+  factory AppController() {
+    return _inst;
   }
 
   bool isMoveValid(String from, String to) {
@@ -61,9 +65,12 @@ class AppController extends ChangeNotifier {
     showDialog(
       context: navigatorContext,
       barrierDismissible: dismissible,
-      builder: (ctx) => MenuDialog(
-        title: title,
-        restartGame: _restartGame,
+      builder: (ctx) => WillPopScope(
+        onWillPop: () async => dismissible,
+        child: MenuDialog(
+          title: title,
+          restartGame: _restartGame,
+        ),
       ),
     );
   }

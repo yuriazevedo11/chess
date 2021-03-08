@@ -33,11 +33,11 @@ class _MenuDialogState extends State<MenuDialog> {
       ),
       elevation: 0,
       backgroundColor: Colors.transparent,
-      child: menuContent(context),
+      child: _menuContent(context),
     );
   }
 
-  menuContent(context) {
+  _menuContent(context) {
     final menuActions = [
       {
         'label': 'New game',
@@ -58,7 +58,6 @@ class _MenuDialogState extends State<MenuDialog> {
         ),
         'action': () {
           _launchRules();
-          Navigator.of(context).pop();
         }
       },
     ];

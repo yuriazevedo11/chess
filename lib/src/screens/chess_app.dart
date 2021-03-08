@@ -6,7 +6,7 @@ class ChessApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: AppController.instance,
+      animation: AppController(),
       builder: (context, child) {
         return MaterialApp(
           navigatorKey: AppController.navigatorKey,
@@ -16,7 +16,7 @@ class ChessApp extends StatelessWidget {
             floatingActionButton: FloatingActionButton(
               child: Icon(Icons.menu),
               backgroundColor: Colors.blueGrey,
-              onPressed: AppController.instance.openMenu,
+              onPressed: AppController().openMenu,
             ),
           ),
         );

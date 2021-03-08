@@ -30,8 +30,7 @@ class _BoardState extends State<Board> {
     setState(() {
       if (from != null) {
         String square = positionToSquare(from, size);
-        List<String> moves =
-            AppController.instance.getPossibleMovesFrom(square);
+        List<String> moves = AppController().getPossibleMovesFrom(square);
 
         List<Position> hints =
             moves.map((element) => squareToPosition(element, size)).toList();
@@ -44,7 +43,7 @@ class _BoardState extends State<Board> {
 
   void _moveFromHint(String to, double size) {
     String squareFrom = positionToSquare(_from, size);
-    AppController.instance.isMoveValid(squareFrom, to);
+    AppController().isMoveValid(squareFrom, to);
 
     setState(() {
       _from = null;
@@ -56,8 +55,8 @@ class _BoardState extends State<Board> {
     double boardSize = getBoardSize(context);
     double pieceSize = getSquareSize(context);
 
-    Position checkPosition = AppController.instance.inCheck != null
-        ? squareToPosition(AppController.instance.inCheck, pieceSize)
+    Position checkPosition = AppController().inCheck != null
+        ? squareToPosition(AppController().inCheck, pieceSize)
         : null;
 
     List<BoardRow> boardRows = _rowsCount.asMap().entries.map(
@@ -77,7 +76,7 @@ class _BoardState extends State<Board> {
 
     List<BoardPiece> pieces = [];
 
-    AppController.instance.board.asMap().forEach(
+    AppController().board.asMap().forEach(
           (columnIndex, row) => row.asMap().forEach(
             (rowIndex, piece) {
               if (piece != null) {
@@ -98,11 +97,11 @@ class _BoardState extends State<Board> {
 
     List<SquareMarker> lastMovePositions = [];
 
-    if (AppController.instance.lastMove != null) {
+    if (AppController().lastMove != null) {
       lastMovePositions.add(
         SquareMarker(
           position: squareToPosition(
-            AppController.instance.lastMove.from,
+            AppController().lastMove.from,
             pieceSize,
           ),
         ),
@@ -110,14 +109,14 @@ class _BoardState extends State<Board> {
       lastMovePositions.add(
         SquareMarker(
           position: squareToPosition(
-            AppController.instance.lastMove.to,
+            AppController().lastMove.to,
             pieceSize,
           ),
         ),
       );
     }
 
-    if (AppController.instance.player == BLACK) {
+    if (AppController().player == BLACK) {
       pieces = pieces.reversed.toList();
     }
 

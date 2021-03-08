@@ -33,7 +33,7 @@ class BoardSquare extends StatelessWidget {
                 Text(
                   (8 - columnIndex).toString(),
                   style: TextStyle(
-                    color: textColor.withAlpha(rowIndex == 0 ? 255 : 0),
+                    color: textColor.withOpacity(rowIndex == 0 ? 1 : 0),
                     fontSize: 12.0,
                   ),
                 ),
@@ -45,7 +45,7 @@ class BoardSquare extends StatelessWidget {
                 Text(
                   String.fromCharCode('a'.codeUnits[0] + rowIndex),
                   style: TextStyle(
-                    color: textColor.withAlpha(columnIndex == 7 ? 255 : 0),
+                    color: textColor.withOpacity(columnIndex == 7 ? 1 : 0),
                     fontSize: 12.0,
                   ),
                 ),

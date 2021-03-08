@@ -16,9 +16,9 @@ class HintMove extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double outerCircleSize = getSquareSize(context);
-    bool squareHasPiece =
-        AppController.instance.isSquareOccupied(position, outerCircleSize);
-    double innerCircleSize = outerCircleSize / (squareHasPiece ? 1 : 2);
+    bool isOccupied =
+        AppController().isSquareOccupied(position, outerCircleSize);
+    double innerCircleSize = outerCircleSize / (isOccupied ? 1 : 2);
 
     Color color = Colors.grey.withOpacity(position == null ? 0 : 0.6);
     BorderRadius borderRadius = BorderRadius.circular(outerCircleSize);
@@ -35,7 +35,7 @@ class HintMove extends StatelessWidget {
           height: outerCircleSize,
           width: outerCircleSize,
           decoration: BoxDecoration(
-            border: squareHasPiece
+            border: isOccupied
                 ? Border.all(
                     width: 4.0,
                     color: color,
@@ -45,7 +45,7 @@ class HintMove extends StatelessWidget {
           ),
           child: Center(
             child: Container(
-              decoration: !squareHasPiece
+              decoration: !isOccupied
                   ? BoxDecoration(
                       borderRadius: borderRadius,
                       color: color,

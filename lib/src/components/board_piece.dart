@@ -39,35 +39,33 @@ class _BoardPieceState extends State<BoardPiece> {
   @override
   Widget build(BuildContext context) {
     double size = getSquareSize(context);
-    bool isPiecePlayable = widget.piece.color == AppController.instance.player;
+    bool isPiecePlayable = widget.piece.color == AppController().player;
 
     return Positioned(
       top: _position.y,
       left: _position.x,
-      child: GestureDetector(
-        onPanStart: isPiecePlayable
-            ? (DragStartDetails details) {
+      child: !isPiecePlayable
+          ? Container(
+              child: _pieceAsset(size),
+            )
+          : GestureDetector(
+              onPanStart: (DragStartDetails details) {
                 widget.setMarkerPosition(_position, size);
                 setState(() {
                   _from = positionToSquare(_position, size);
                 });
-              }
-            : null,
-        onPanUpdate: isPiecePlayable
-            ? (DragUpdateDetails details) {
+              },
+              onPanUpdate: (DragUpdateDetails details) {
                 setState(() {
                   _position = Position(
                     x: _position.x + details.delta.dx,
                     y: _position.y + details.delta.dy,
                   );
                 });
-              }
-            : null,
-        onPanEnd: isPiecePlayable
-            ? (DragEndDetails details) {
+              },
+              onPanEnd: (DragEndDetails details) {
                 String to = positionToSquare(_position, size);
-                bool isMoveValid =
-                    AppController.instance.isMoveValid(_from, to);
+                bool isMoveValid = AppController().isMoveValid(_from, to);
 
                 setState(() {
                   if (!isMoveValid) {
@@ -76,15 +74,18 @@ class _BoardPieceState extends State<BoardPiece> {
                     widget.setMarkerPosition(null);
                   }
                 });
-              }
-            : null,
-        child: Image(
-          height: size,
-          width: size,
-          image: AssetImage(
-            'assets/images/${widget.piece.color}${widget.piece.type}.png',
-          ),
-        ),
+              },
+              child: _pieceAsset(size),
+            ),
+    );
+  }
+
+  _pieceAsset(double size) {
+    return Image(
+      height: size,
+      width: size,
+      image: AssetImage(
+        'assets/images/${widget.piece.color}${widget.piece.type}.png',
       ),
     );
   }

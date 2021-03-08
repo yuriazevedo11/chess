@@ -19,9 +19,7 @@ class BoardRow extends StatelessWidget {
     ).toList();
 
     return Expanded(
-      child: Row(
-        children: boardSquares,
-      ),
+      child: Row(children: boardSquares),
     );
   }
 }
