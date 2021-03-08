@@ -1,3 +1,4 @@
+import 'package:chess/src/controllers/app_controller.dart';
 import 'package:chess/src/models/piece.dart';
 import 'package:chess/src/models/position.dart';
 import 'package:chess/src/utils/dimensions.dart';
@@ -6,15 +7,11 @@ import 'package:flutter/material.dart';
 
 class BoardPiece extends StatefulWidget {
   final Piece piece;
-  final String player;
   final Position position;
-  final bool Function(String, String) isMoveValid;
   final void Function(Position, [double]) setMarkerPosition;
 
   BoardPiece({
     @required this.piece,
-    @required this.player,
-    @required this.isMoveValid,
     @required this.position,
     @required this.setMarkerPosition,
   });
@@ -42,7 +39,7 @@ class _BoardPieceState extends State<BoardPiece> {
   @override
   Widget build(BuildContext context) {
     double size = getSquareSize(context);
-    bool isPiecePlayable = widget.piece.color == widget.player;
+    bool isPiecePlayable = widget.piece.color == AppController.instance.player;
 
     return Positioned(
       top: _position.y,
@@ -69,7 +66,8 @@ class _BoardPieceState extends State<BoardPiece> {
         onPanEnd: isPiecePlayable
             ? (DragEndDetails details) {
                 String to = positionToSquare(_position, size);
-                bool isMoveValid = widget.isMoveValid(_from, to);
+                bool isMoveValid =
+                    AppController.instance.isMoveValid(_from, to);
 
                 setState(() {
                   if (!isMoveValid) {

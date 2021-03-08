@@ -2,8 +2,7 @@ import 'package:chess/src/components/board_piece.dart';
 import 'package:chess/src/components/board_row.dart';
 import 'package:chess/src/components/hint_move.dart';
 import 'package:chess/src/components/square_marker.dart';
-import 'package:chess/src/models/move.dart';
-import 'package:chess/src/models/piece.dart';
+import 'package:chess/src/controllers/app_controller.dart';
 import 'package:chess/src/models/position.dart';
 import 'package:chess/src/utils/constants.dart';
 import 'package:chess/src/utils/dimensions.dart';
@@ -11,24 +10,6 @@ import 'package:chess/src/utils/notations.dart';
 import 'package:flutter/material.dart';
 
 class Board extends StatefulWidget {
-  final String player;
-  final List<List<Piece>> board;
-  final String inCheck;
-  final Move lastMove;
-  final bool Function(String, String) isMoveValid;
-  final List<String> Function(String) getPossibleMovesFrom;
-  final bool Function(Position position, double size) isSquareOccupied;
-
-  Board({
-    @required this.player,
-    @required this.board,
-    @required this.inCheck,
-    @required this.lastMove,
-    @required this.isMoveValid,
-    @required this.getPossibleMovesFrom,
-    @required this.isSquareOccupied,
-  });
-
   @override
   _BoardState createState() => _BoardState();
 }
@@ -49,7 +30,8 @@ class _BoardState extends State<Board> {
     setState(() {
       if (from != null) {
         String square = positionToSquare(from, size);
-        List<String> moves = widget.getPossibleMovesFrom(square);
+        List<String> moves =
+            AppController.instance.getPossibleMovesFrom(square);
 
         List<Position> hints =
             moves.map((element) => squareToPosition(element, size)).toList();
@@ -62,7 +44,7 @@ class _BoardState extends State<Board> {
 
   void _moveFromHint(String to, double size) {
     String squareFrom = positionToSquare(_from, size);
-    widget.isMoveValid(squareFrom, to);
+    AppController.instance.isMoveValid(squareFrom, to);
 
     setState(() {
       _from = null;
@@ -74,8 +56,8 @@ class _BoardState extends State<Board> {
     double boardSize = getBoardSize(context);
     double pieceSize = getSquareSize(context);
 
-    Position checkPosition = widget.inCheck != null
-        ? squareToPosition(widget.inCheck, pieceSize)
+    Position checkPosition = AppController.instance.inCheck != null
+        ? squareToPosition(AppController.instance.inCheck, pieceSize)
         : null;
 
     List<BoardRow> boardRows = _rowsCount.asMap().entries.map(
@@ -89,22 +71,19 @@ class _BoardState extends State<Board> {
           (position) => HintMove(
             position: position,
             moveFromHint: _moveFromHint,
-            isSquareOccupied: widget.isSquareOccupied,
           ),
         )
         .toList();
 
     List<BoardPiece> pieces = [];
 
-    widget.board.asMap().forEach(
+    AppController.instance.board.asMap().forEach(
           (columnIndex, row) => row.asMap().forEach(
             (rowIndex, piece) {
               if (piece != null) {
                 pieces.add(
                   BoardPiece(
                     piece: piece,
-                    player: widget.player,
-                    isMoveValid: widget.isMoveValid,
                     setMarkerPosition: _setMarkerPosition,
                     position: Position(
                       x: rowIndex * pieceSize,
@@ -119,19 +98,26 @@ class _BoardState extends State<Board> {
 
     List<SquareMarker> lastMovePositions = [];
 
-    if (widget.lastMove != null) {
+    if (AppController.instance.lastMove != null) {
       lastMovePositions.add(
         SquareMarker(
-            position: squareToPosition(widget.lastMove.from, pieceSize)),
+          position: squareToPosition(
+            AppController.instance.lastMove.from,
+            pieceSize,
+          ),
+        ),
       );
       lastMovePositions.add(
         SquareMarker(
-          position: squareToPosition(widget.lastMove.to, pieceSize),
+          position: squareToPosition(
+            AppController.instance.lastMove.to,
+            pieceSize,
+          ),
         ),
       );
     }
 
-    if (widget.player == BLACK) {
+    if (AppController.instance.player == BLACK) {
       pieces = pieces.reversed.toList();
     }
 
@@ -142,10 +128,7 @@ class _BoardState extends State<Board> {
         child: Stack(
           children: [
             Column(children: boardRows),
-            SquareMarker(
-              position: checkPosition,
-              color: Colors.red,
-            ),
+            SquareMarker(position: checkPosition, color: Colors.red),
             SquareMarker(position: _from),
             ...lastMovePositions,
             ...pieces,
