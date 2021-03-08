@@ -1,12 +1,12 @@
-import 'package:chess/models/history.dart';
-import 'package:chess/models/move.dart';
-import 'package:chess/models/piece.dart';
-import 'package:chess/models/ugly_move.dart';
-import 'package:chess/utils/algebraic.dart';
-import 'package:chess/utils/constants.dart';
-import 'package:chess/utils/validate_fen.dart';
+import 'package:chess/src/models/history.dart';
+import 'package:chess/src/models/move.dart';
+import 'package:chess/src/models/piece.dart';
+import 'package:chess/src/models/ugly_move.dart';
+import 'package:chess/src/utils/algebraic.dart';
+import 'package:chess/src/utils/constants.dart';
+import 'package:chess/src/utils/validate_fen.dart';
 
-class Chess {
+class ChessController {
   final String _fen;
   final _rooks = {
     'w': [
@@ -28,7 +28,7 @@ class Chess {
   int _moveNumber = 1;
   List<History> _history = [];
 
-  Chess([this._fen]) {
+  ChessController([this._fen]) {
     if (_fen == null) {
       _init(DEFAULT_POSITION);
     } else {

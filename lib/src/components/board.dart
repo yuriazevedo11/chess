@@ -1,13 +1,13 @@
-import 'package:chess/components/board_piece.dart';
-import 'package:chess/components/board_row.dart';
-import 'package:chess/components/hint_move.dart';
-import 'package:chess/components/square_marker.dart';
-import 'package:chess/models/move.dart';
-import 'package:chess/models/piece.dart';
-import 'package:chess/models/position.dart';
-import 'package:chess/utils/constants.dart';
-import 'package:chess/utils/dimensions.dart';
-import 'package:chess/utils/notations.dart';
+import 'package:chess/src/components/board_piece.dart';
+import 'package:chess/src/components/board_row.dart';
+import 'package:chess/src/components/hint_move.dart';
+import 'package:chess/src/components/square_marker.dart';
+import 'package:chess/src/models/move.dart';
+import 'package:chess/src/models/piece.dart';
+import 'package:chess/src/models/position.dart';
+import 'package:chess/src/utils/constants.dart';
+import 'package:chess/src/utils/dimensions.dart';
+import 'package:chess/src/utils/notations.dart';
 import 'package:flutter/material.dart';
 
 class Board extends StatefulWidget {

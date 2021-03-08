@@ -1,7 +1,7 @@
-import 'package:chess/models/piece.dart';
-import 'package:chess/models/position.dart';
-import 'package:chess/utils/dimensions.dart';
-import 'package:chess/utils/notations.dart';
+import 'package:chess/src/models/piece.dart';
+import 'package:chess/src/models/position.dart';
+import 'package:chess/src/utils/dimensions.dart';
+import 'package:chess/src/utils/notations.dart';
 import 'package:flutter/material.dart';
 
 class BoardPiece extends StatefulWidget {

@@ -1,5 +1,5 @@
-import 'package:chess/models/position.dart';
-import 'package:chess/utils/dimensions.dart';
+import 'package:chess/src/models/position.dart';
+import 'package:chess/src/utils/dimensions.dart';
 import 'package:flutter/material.dart';
 
 const DEFAULT_COLOR = Color(0xFF64b5f6);

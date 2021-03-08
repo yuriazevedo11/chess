@@ -1,4 +1,4 @@
-import 'package:chess/models/position.dart';
+import 'package:chess/src/models/position.dart';
 
 String positionToSquare(Position gesturePosition, double size) {
   String column = String.fromCharCode(

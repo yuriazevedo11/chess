@@ -1,4 +1,4 @@
-import 'package:chess/components/board_square.dart';
+import 'package:chess/src/components/board_square.dart';
 import 'package:flutter/material.dart';
 
 class BoardRow extends StatelessWidget {

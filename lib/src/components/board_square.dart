@@ -1,4 +1,4 @@
-import 'package:chess/utils/dimensions.dart';
+import 'package:chess/src/utils/dimensions.dart';
 import 'package:flutter/material.dart';
 
 const BLACK = Color(0xFFB0BEC5);

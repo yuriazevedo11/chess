@@ -1,4 +1,4 @@
-import 'package:chess/models/fen_exception.dart';
+import 'package:chess/src/models/fen_exception.dart';
 
 bool _isNumeric(String s) {
   if (s == null) return false;

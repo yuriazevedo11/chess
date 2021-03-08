@@ -1,11 +1,11 @@
-import 'package:chess/components/board.dart';
-import 'package:chess/components/menu_dialog.dart';
-import 'package:chess/models/chess.dart';
-import 'package:chess/models/move.dart';
-import 'package:chess/models/piece.dart';
-import 'package:chess/models/position.dart';
-import 'package:chess/utils/constants.dart';
-import 'package:chess/utils/notations.dart';
+import 'package:chess/src/components/board.dart';
+import 'package:chess/src/components/menu_dialog.dart';
+import 'package:chess/src/controllers/chess_controller.dart';
+import 'package:chess/src/models/move.dart';
+import 'package:chess/src/models/piece.dart';
+import 'package:chess/src/models/position.dart';
+import 'package:chess/src/utils/constants.dart';
+import 'package:chess/src/utils/notations.dart';
 import 'package:flutter/material.dart';
 
 class ChessApp extends StatefulWidget {
@@ -15,7 +15,7 @@ class ChessApp extends StatefulWidget {
 
 class _ChessAppState extends State<ChessApp> {
   final navigatorKey = GlobalKey<NavigatorState>();
-  static final Chess chess = Chess();
+  static final ChessController chess = ChessController();
   List<List<Piece>> board;
   String player;
   String inCheck;

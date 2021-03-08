@@ -1,4 +1,4 @@
-import 'package:chess/models/ugly_move.dart';
+import 'package:chess/src/models/ugly_move.dart';
 
 class History {
   UglyMove move;
